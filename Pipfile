@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 pillow = "*"
+tkmacosx = "*"
+gtts = "*"
+pygame = "*"
 
 [dev-packages]
 

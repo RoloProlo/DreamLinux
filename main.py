@@ -1,6 +1,11 @@
 import tkinter as tk
 from homescreen import HomeScreen
-
+# Import additional screens
+from descriptionscreen import DescriptionScreen
+from alarmscreen import AlarmScreen
+from meaningscreen import MeaningScreen
+from characterscreen import CharacterScreen
+from storyscreen import StoryScreen
 
 class MainApplication(tk.Tk):
     def __init__(self):
@@ -12,8 +17,8 @@ class MainApplication(tk.Tk):
         self.bind("<Escape>", self.toggle_fullscreen)  # Bind the Escape key to toggle fullscreen
 
         # Provide frames as a tuple
-        for F in (HomeScreen,):
-            frame = F(parent=self, controller=self)
+        for F in (HomeScreen, DescriptionScreen, AlarmScreen, MeaningScreen, CharacterScreen, StoryScreen):
+            frame = F(parent=self, controller=self)  # Note the 'controller=self' part
             self.frames[F.__name__] = frame
             frame.place(x=0, y=0, width=1024, height=600)
 

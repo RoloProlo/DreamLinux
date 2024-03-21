@@ -1,6 +1,10 @@
 import tkinter as tk
+from tkmacosx import Button
 from PIL import Image, ImageTk
-from datetime import datetime
+import subprocess
+from datetime import datetime, date
+import sqlite3
+import sys
 
 class HomeScreen(tk.Frame):
     def __init__(self, parent, controller):
@@ -9,6 +13,18 @@ class HomeScreen(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         self.configure(background='#1D2364')  # Set a background color
+
+        # Connect to the SQLite database for dream images
+        conn = sqlite3.connect('DreamImages.db')
+        cursor = conn.cursor()
+
+        # Connect to the SQLite database for characters
+        conn_characters = sqlite3.connect('Characters.db')
+        cursor_characters = conn_characters.cursor()
+
+        # Connect to the SQLite database for characters in dream
+        conn_dreamcast = sqlite3.connect('DreamCast.db')
+        cursor_dreamcast = conn_dreamcast.cursor()
 
         # Display the current time
         self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
