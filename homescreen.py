@@ -66,7 +66,7 @@ class HomeScreen(tk.Frame):
         button2.place(x=space_between_buttons * 2 + button_width, y=520, width=button_width, height=30)
 
         # Button 3
-        button3 = tk.Button(self, text="TESSSTT", command=lambda: self.controller.show_frame("CharacterScreen"))
+        button3 = tk.Button(self, text="Characters", command=lambda: self.controller.show_frame("CharacterScreen"))
         button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width, height=30)
 
         # Button 4
