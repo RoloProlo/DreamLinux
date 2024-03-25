@@ -12,7 +12,7 @@ class MainApplication(tk.Tk):
         tk.Tk.__init__(self)
         self.geometry('1024x600')  # Set window size
         self.frames = {}
-
+        self.current_image_index = 0  # Initialize the attribute here
         self.attributes('-fullscreen', True)  # Set the application to fullscreen
         self.bind("<Escape>", self.toggle_fullscreen)  # Bind the Escape key to toggle fullscreen
 

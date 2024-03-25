@@ -1,70 +1,95 @@
 import tkinter as tk
-from tkmacosx import Button
 from PIL import Image, ImageTk
-import subprocess
-from datetime import datetime, date
 import sqlite3
-import sys
+from datetime import datetime
+
 
 class HomeScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.controller = controller
+        self.configure(background='#1D2364')
 
-        self.controller = controller  # Set the controller attribute
-        tk.Frame.__init__(self, parent)
+        self.image_list = []
+        self.current_image_index = 0
+        self.fullscreen_overlay = None
 
-        self.configure(background='#1D2364')  # Set a background color
+        self.image_label = None  # Initialize image_label
 
-        # Connect to the SQLite database for dream images
-        conn = sqlite3.connect('DreamImages.db')
-        cursor = conn.cursor()
-        # Connect to the SQLite database for characters
-        conn_characters = sqlite3.connect('Characters.db')
-        cursor_characters = conn_characters.cursor()
-        # Connect to the SQLite database for characters in dream
-        conn_dreamcast = sqlite3.connect('DreamCast.db')
-        cursor_dreamcast = conn_dreamcast.cursor()
 
+        # Load images from database and create UI elements
+        self.load_images_from_database()
+        self.setup_ui()
+
+    def setup_ui(self):
         # Display the current time
         self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.time_label.pack()
 
-        # # Display the current date
+        # Display the date of the current image
         self.date_label = tk.Label(self, font=("Helvetica", 14), bg="#1D2364", fg="white")
-        self.date_label.pack()  # Space between date and the image
-
-        #Functions
+        self.date_label.pack()
 
         self.update_time_date()
-        self.display_image()
+        self.display_current_image()
         self.create_buttons()
 
-        self.fullscreen_overlay = None  # Placeholder for the fullscreen overlay widget
-
-
     def update_time_date(self):
-        # Get the current time and date
         now = datetime.now()
-        time_string = now.strftime("%H:%M:%S")
-        date_string = now.strftime("%d-%m-%Y")
-
-        self.time_label.config(text=time_string)
-        self.date_label.config(text=date_string)
-
-        # Update the labels every 1000ms (1 second)
+        self.time_label.config(text=now.strftime("%H:%M:%S"))
         self.time_label.after(1000, self.update_time_date)
 
-    def display_image(self):
-        image_path = 'images/image1.png'
+    def load_images_from_database(self):
+        conn = sqlite3.connect('DreamImages.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT date, image FROM DreamImages ORDER BY date DESC")
+        self.image_list = cursor.fetchall()
+        print()
+        conn.close()
+
+
+    def display_current_image(self):
+        # Ensure there are images to display
+        if not self.image_list or self.current_image_index >= len(self.image_list):
+            # Optionally, display a placeholder or message when there are no images
+            if self.image_label is not None:
+                self.image_label.destroy()
+            self.image_label = tk.Label(self, text="No images available", background='#1D2364', fg='white')
+            self.image_label.pack(side="top", fill="both", expand=True)
+            return
+
+        # Clear the current image if it exists
+        if self.image_label is not None:
+            self.image_label.destroy()
+
+        # Get the current image and date
+        current_date, image_path = self.image_list[self.current_image_index]
+
+        # Update the image
         original_image = Image.open(image_path)
         photo = ImageTk.PhotoImage(original_image)
-        image_label = tk.Label(self, image=photo, background='#1D2364')
-        image_label.image = photo  # Keep a reference!
-        image_label.pack(padx=20, pady=20)  # Adjust padding as needed
 
-        # Add an enlarge button or make the label clickable
+        # Create a label to display the image
+        self.image_label = tk.Label(self, image=photo, background='#1D2364')
+        self.image_label.image = photo  # Keep a reference!
+        self.image_label.pack(side="top", fill="both", expand=True)
+
+        # Update the date label to show the date of the current image
+        self.date_label.config(text=current_date)
+
         enlarge_button = tk.Button(self, text="⇐", command=lambda: self.enlarge_image(image_path))
-        enlarge_button.place(x=900, y=100, width=40, height=40)
+        enlarge_button.place(relx=0.884, rely=0.19, anchor=tk.CENTER)
+        self.create_buttons()
+
+    def next_image(self):
+        if self.current_image_index < len(self.image_list) - 1:
+            self.current_image_index += 1
+            self.display_current_image()
+
+    def previous_image(self):
+        if self.current_image_index > 0:
+            self.current_image_index -= 1
+            self.display_current_image()
 
     def enlarge_image(self, image_path):
         # Clear the window
@@ -101,14 +126,23 @@ class HomeScreen(tk.Frame):
     def exit_fullscreen(self, event=None):
         # Hide the overlay
         if self.overlay_label:
-            self.overlay_label.place_forget()
+            self.overlay_label.destroy()
+            self.overlay_label = None
 
         # Restore the widgets (or rebuild the interface as it was before enlarging)
-        self.display_image()
+        self.display_current_image()
         self.create_buttons()
-        # ... and any other UI setup code to restore the initial UI state
-
+        # ...
     def create_buttons(self):
+
+        # Navigation buttons
+        next_button = tk.Button(self, text=">>", command=self.next_image)
+        prev_button = tk.Button(self, text="<<", command=self.previous_image)
+
+        # Place navigation buttons
+        next_button.place(relx=0.95, rely=0.5, anchor=tk.CENTER)
+        prev_button.place(relx=0.05, rely=0.5, anchor=tk.CENTER)
+
         # Calculate button width and the spacing between them
         button_width = 100  # Fixed width for each button
         parent_width = 1024  # Assuming the parent frame's width is the whole window width
@@ -125,8 +159,9 @@ class HomeScreen(tk.Frame):
         button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width, height=30)
         # Button 4
 
-        # button4 = tk.Button(self, text="Story", command=lambda: self.controller.show_frame("StoryScreen"))
-        # button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width, height=30)  # Adjust y for bottom placement
+        button4 = tk.Button(self, text="Story", command=lambda: self.controller.show_frame("StoryScreen"))
+        button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width, height=30)  # Adjust y for bottom placement
         # # Button 5
         button5 = tk.Button(self, text="Alarm", command=lambda: self.controller.show_frame("AlarmScreen"))
-        button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width, height=30)  # Adjust y for bottom placement
+        button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width,
+                      height=30)  # Adjust y for bottom placement
