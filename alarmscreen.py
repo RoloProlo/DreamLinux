@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import simpledialog
+from tkmacosx import Button
 from datetime import datetime
 import sqlite3
 import tkmacosx
+import subprocess
 from storyscreen import StoryScreen
 
 
@@ -16,21 +18,34 @@ class AlarmScreen(tk.Frame):
         self.conn = sqlite3.connect('Alarms.db')
         self.cursor = self.conn.cursor()
 
-        # Create the Alarms table if it doesn't exist
-        self.cursor.execute('''CREATE TABLE IF NOT EXISTS Alarms (
-                                id INTEGER PRIMARY KEY,
-                                alarm_time TEXT,
-                                state TEXT
-                              )''')
-        self.conn.commit()
+        # Fetch existing alarms from the database
+        self.cursor.execute("SELECT alarm_time, state FROM Alarms")
+        self.existing_alarms = self.cursor.fetchall()
+
+
+        self.alarm_y = [0.3]
+        self.alarm_toggles = {}
+
 
         # UI Elements
         self.setup_ui()
 
-        # Start the check for alarms
-        self.check_alarms()
+        for alarm in self.existing_alarms:
+            self.create_alarm_widgets(alarm[0], alarm[1])
 
-        self.display_alarms()
+        # Start the check for alarms
+
+        # self.display_alarms()
+
+    def check_alarms(self):
+        current_time = datetime.now().strftime("%H:%M")
+        self.cursor.execute("SELECT alarm_time FROM Alarms WHERE state=?", ('ON',))
+        active_alarms = self.cursor.fetchall()
+        for alarm_time in active_alarms:
+            if alarm_time[0] == current_time:
+                print(f"Alarm triggered at {current_time}")
+                self.controller.show_frame("StoryScreen")
+        self.after(30000, self.check_alarms)  # Check alarms every 30 seconds
 
     def setup_ui(self):
         self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
@@ -43,14 +58,34 @@ class AlarmScreen(tk.Frame):
         add_alarm_button = tkmacosx.Button(self, text='Add Alarm', command=self.add_alarm, bg='#8E97FF', fg='white',
                                            pady=5, borderless=1)
         add_alarm_button.pack()
-        back_button.pack()
 
-        self.alarm_y = [0.3]
-        self.alarm_toggles = {}
+        self.back_button = Button(self, text='Go Back', command=self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
 
-        self.back_button = back_button
+        # SHOW ELEMENTS ON SCREEN
+        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+        add_alarm_button.place(relx=0.8, rely=0.9, anchor=tk.CENTER)
+        back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
-        self.display_alarms()
+        # self.display_alarms()
+
+    def create_alarm_widgets(self, alarm_time, state):
+        global alarm_toggle
+        # Create a new label for the alarm
+        alarm_label = tk.Label(self, text=alarm_time, font=("Helvetica", 44, "bold"), bg="#1D2364", fg="white")
+        alarm_label.place(relx=0.2, rely=self.alarm_y[-1], anchor=tk.CENTER)
+        alarm_label.bind("<Button-1>", self.on_alarm_click)
+
+        # Create a new toggle button for the alarm
+        if state == "ON":
+            alarm_toggle = Button(self, text=state, bg='#8E97FF', fg='white', pady=5, borderless=1, command=lambda: self.toggle_alarm(alarm_label))
+        else:
+            alarm_toggle = Button(self, text=state, bg='#C6C7CC', fg='white', pady=5, borderless=1, command=lambda: self.toggle_alarm(alarm_label))
+
+        alarm_toggle.place(relx=0.8, rely=self.alarm_y[-1], anchor=tk.CENTER)
+        self.alarm_toggles[alarm_label] = alarm_toggle  # Store alarm toggle button associated with the alarm
+
+        # Increment the alarm_y for the next alarm
+        self.alarm_y.append(self.alarm_y[-1] + 0.1)
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")
@@ -58,7 +93,7 @@ class AlarmScreen(tk.Frame):
         self.after(1000, self.update_clock)  # Update every 1000 milliseconds (1 second)
 
     def add_alarm(self):
-        global hour_label, minute_label, hour_var, minute_var, alarm_y, alarm_toggles
+        global hour_label, minute_label, hour_var, minute_var
         # Check if alarm_y is empty and initialize with a starting y-coordinate if necessary
         if not self.alarm_y:
             self.alarm_y = [0.2]
@@ -71,7 +106,7 @@ class AlarmScreen(tk.Frame):
             alarm_label.bind("<Button-1>", self.on_alarm_click)
 
             alarm_toggle = tkmacosx.Button(self, text='ON', bg='#414BB2', fg='white', pady=5, borderless=1,
-                                           command=lambda: self.toggle_alarm(alarm_label))
+                                           command=lambda: self.toggle_alarm(self, alarm_label))
             alarm_toggle.place(relx=0.8, rely=self.alarm_y[-1], anchor=tk.CENTER)
             self.alarm_toggles[alarm_label] = alarm_toggle  # Store alarm toggle button associated with the alarm
 
@@ -165,11 +200,12 @@ class AlarmScreen(tk.Frame):
         delete_button.place(relx=0.3, rely=0.9, anchor=tk.CENTER)
 
     def set_alarm(self):
-        global alarm_toggle
         alarm_time = f"{hour_var.get():02d}:{minute_var.get():02d}"
         alarm_label.config(text=alarm_time)
         self.alarm_toggles[alarm_label] = alarm_toggle  # Store alarm toggle button associated with the alarm
         alarm_window.destroy()
+        alarm_label.bind("<Button-1>", self.on_alarm_click)
+
 
         # Insert the alarm into the database
         # Check if the alarm already exists in the database
@@ -228,30 +264,9 @@ class AlarmScreen(tk.Frame):
         self.cursor.execute("UPDATE Alarms SET state=? WHERE alarm_time=?", (state, alarm_time))
         self.conn.commit()
 
-    def check_alarms(self):
-        current_time = datetime.now().strftime("%H:%M")
-        self.cursor.execute("SELECT alarm_time FROM Alarms WHERE state=?", ('ON',))
-        active_alarms = self.cursor.fetchall()
-        for alarm_time in active_alarms:
-            if alarm_time[0] == current_time:
-                print(f"Alarm triggered at {current_time}")
-                self.controller.show_frame("StoryScreen")
-        self.after(30000, self.check_alarms)  # Check alarms every 30 seconds
-
-    def display_alarms(self):
-        # self.alarm_listbox.delete(0, tk.END)  # Clear the listbox
-        self.cursor.execute("SELECT alarm_time FROM Alarms")
-        # alarms = self.cursor.fetchall()
-        # for alarm in alarms:
-        #     self.alarm_listbox.insert(tk.END, alarm[0])
+    def go_back(self):
+        self.controller.show_frame("HomeScreen")
+        self.conn.close()  # Close the database connection when leaving this screen
 
     def __del__(self):
         self.conn.close()
-
-
-# Example usage:
-if __name__ == "__main__":
-    root = tk.Tk()
-    alarm_screen = AlarmScreen(root, None)
-    alarm_screen.pack(fill="both", expand=True)
-    root.mainloop()
