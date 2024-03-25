@@ -17,8 +17,6 @@ class StoryScreen(tk.Frame):
         self.controller = controller
         self.configure(background='#1D2364')
 
-        # Initialize the recognizer
-        self.recognizer = sr.Recognizer()
 
         self.left_bubble = SpeechBubble(self, bg='#1D2364', bd=0, highlightthickness=0)
         self.left_bubble.place(relx=0.1, rely=0.1, anchor='w')
