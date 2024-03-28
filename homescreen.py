@@ -7,6 +7,8 @@ from datetime import datetime
 class HomeScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.date_label = tk.Label(self, font=("Helvetica", 24), bg="#1D2364", fg="white")
+        self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.controller = controller
         self.configure(background='#1D2364')
 
@@ -16,18 +18,15 @@ class HomeScreen(tk.Frame):
 
         self.image_label = None  # Initialize image_label
 
-
         # Load images from database and create UI elements
         self.load_images_from_database()
         self.setup_ui()
 
     def setup_ui(self):
         # Display the current time
-        self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.time_label.pack()
 
         # Display the date of the current image
-        self.date_label = tk.Label(self, font=("Helvetica", 24), bg="#1D2364", fg="white")
         self.date_label.pack()
 
         self.update_time_date()
@@ -46,7 +45,6 @@ class HomeScreen(tk.Frame):
         self.image_list = cursor.fetchall()
         print()
         conn.close()
-
 
     def display_current_image(self):
         # Ensure there are images to display
@@ -120,8 +118,6 @@ class HomeScreen(tk.Frame):
         overlay_label.place(x=0, y=(600 - new_height) // 2)  # Center vertically
         overlay_label.bind("<Button-1>", self.exit_fullscreen)
 
-        # Remember to set this in __init__ to track the overlay label
-        self.overlay_label = overlay_label
 
     def exit_fullscreen(self, event=None):
         # Hide the overlay
@@ -133,6 +129,7 @@ class HomeScreen(tk.Frame):
         self.display_current_image()
         self.create_buttons()
         # ...
+
     def create_buttons(self):
 
         # Navigation buttons
