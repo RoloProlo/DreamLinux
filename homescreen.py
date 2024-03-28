@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import sqlite3
 from datetime import datetime
+# from descriptionscreen import DescriptionScreen
 
 
 class HomeScreen(tk.Frame):
@@ -11,6 +12,8 @@ class HomeScreen(tk.Frame):
         self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.controller = controller
         self.configure(background='#1D2364')
+
+        # self.description_screen = DescriptionScreen(parent, controller)  # Reference to DescriptionScreen instance
 
         self.image_list = []
         self.current_image_index = 0
@@ -79,10 +82,18 @@ class HomeScreen(tk.Frame):
         enlarge_button.place(relx=0.884, rely=0.19, anchor=tk.CENTER)
         self.create_buttons()
 
+    def update_current_index(self, index):
+        self.current_image_index = index
+        print("updated index: ", index)
+
+
     def previous_image(self):
         if self.current_image_index < len(self.image_list) - 1:
             self.current_image_index += 1
             self.display_current_image()
+            # try out
+            self.update_current_index(self.current_image_index)  # Update current_index in DescriptionScreen
+
 
     def next_image(self):
         if self.current_image_index > 0:
@@ -155,10 +166,11 @@ class HomeScreen(tk.Frame):
         button3 = tk.Button(self, text="Characters", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("CharacterScreen"))
         button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width, height=30)
         # Button 4
-
         button4 = tk.Button(self, text="Story", command=lambda: self.controller.show_frame("StoryScreen"))
         button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width, height=30)  # Adjust y for bottom placement
         # # Button 5
         button5 = tk.Button(self, text="Alarm", bg='#414BB2', fg='white', command=lambda: self.controller.show_frame("AlarmScreen"))
         button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width,
                       height=30)  # Adjust y for bottom placement
+
+
