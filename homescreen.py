@@ -81,12 +81,12 @@ class HomeScreen(tk.Frame):
         enlarge_button.place(relx=0.884, rely=0.19, anchor=tk.CENTER)
         self.create_buttons()
 
-    def next_image(self):
+    def previous_image(self):
         if self.current_image_index < len(self.image_list) - 1:
             self.current_image_index += 1
             self.display_current_image()
 
-    def previous_image(self):
+    def next_image(self):
         if self.current_image_index > 0:
             self.current_image_index -= 1
             self.display_current_image()
@@ -149,19 +149,19 @@ class HomeScreen(tk.Frame):
         space_between_buttons = (parent_width - (5 * button_width)) / 6  # Equally space out buttons
 
         # Button 1
-        button1 = tk.Button(self, text="Descriptions", command=lambda: self.controller.show_frame("DescriptionScreen"))
+        button1 = tk.Button(self, text="Descriptions", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("DescriptionScreen"))
         button1.place(x=space_between_buttons, y=520, width=button_width, height=30)  # Adjust y for bottom placement
         # Button 2
-        button2 = tk.Button(self, text="Meaning", command=lambda: self.controller.show_frame("MeaningScreen"))
+        button2 = tk.Button(self, text="Meaning", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("MeaningScreen"))
         button2.place(x=space_between_buttons * 2 + button_width, y=520, width=button_width, height=30)
         # Button 3
-        button3 = tk.Button(self, text="Characters", command=lambda: self.controller.show_frame("CharacterScreen"))
+        button3 = tk.Button(self, text="Characters", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("CharacterScreen"))
         button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width, height=30)
         # Button 4
 
         button4 = tk.Button(self, text="Story", command=lambda: self.controller.show_frame("StoryScreen"))
         button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width, height=30)  # Adjust y for bottom placement
         # # Button 5
-        button5 = tk.Button(self, text="Alarm", command=lambda: self.controller.show_frame("AlarmScreen"))
+        button5 = tk.Button(self, text="Alarm", bg='#414BB2', fg='white', command=lambda: self.controller.show_frame("AlarmScreen"))
         button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width,
                       height=30)  # Adjust y for bottom placement
