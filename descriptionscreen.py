@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkmacosx import Button
 from datetime import datetime
 import sqlite3
+from homescreen import HomeScreen
 
 
 class DescriptionScreen(tk.Frame):
@@ -12,7 +13,10 @@ class DescriptionScreen(tk.Frame):
         self.text_widget_height = 350  # Adjust this value as needed
         self.controller = controller
         self.configure(background='#1D2364')
-        self.current_image_index = 0
+
+        self.home_screen = HomeScreen(parent, controller)
+        self.current_image_index = self.home_screen.current_image_index 
+
 
         # Connect to the SQLite database for dream images
         self.conn = sqlite3.connect('DreamImages.db')
@@ -20,9 +24,10 @@ class DescriptionScreen(tk.Frame):
         self.text_widget = tk.Text
 
         # Retrieve index of dream image displayed on the homescreen
-        current_index = 0
+        # current_index = 0
+
         # Access the data of the current dream image in the DreamImages database
-        self.cursor.execute("SELECT * FROM DreamImages LIMIT 1 OFFSET ?", (current_index,))
+        self.cursor.execute("SELECT * FROM DreamImages ORDER BY date DESC LIMIT 1 OFFSET ?", (self.current_image_index,))
         self.dream_image_data = self.cursor.fetchone()
 
         # Assuming the description is stored in the third column (index 2)
