@@ -105,7 +105,7 @@ class AlarmScreen(tk.Frame):
             alarm_label.place(relx=0.2, rely=self.alarm_y[-1], anchor=tk.CENTER)
             alarm_label.bind("<Button-1>", self.on_alarm_click)
 
-            alarm_toggle = tkmacosx.Button(self, text='ON', bg='#414BB2', fg='white', pady=5, borderless=1,
+            alarm_toggle = tkmacosx.Button(self, text='ON', bg='#8E97FF', fg='white', pady=5, borderless=1,
                                            command=lambda: self.toggle_alarm(self, alarm_label))
             alarm_toggle.place(relx=0.8, rely=self.alarm_y[-1], anchor=tk.CENTER)
             self.alarm_toggles[alarm_label] = alarm_toggle  # Store alarm toggle button associated with the alarm
@@ -130,14 +130,12 @@ class AlarmScreen(tk.Frame):
         hour_label = tk.Label(alarm_window, textvariable=hour_var, fg="white", bg="#1D2364",
                               font=("Helvetica", 44, "bold"))
         hour_label.place(relx=0.4, rely=0.4, anchor=tk.CENTER)
-        hour_label.bind("<MouseWheel>", self.scroll_up)
-        hour_label.bind("<Shift-MouseWheel>", self.scroll_down)
+        hour_label.bind("<MouseWheel>", self.scroll)
 
         minute_label = tk.Label(alarm_window, textvariable=minute_var, fg="white", bg="#1D2364",
                                 font=("Helvetica", 44, "bold"))
         minute_label.place(relx=0.61, rely=0.4, anchor=tk.CENTER)
-        minute_label.bind("<MouseWheel>", self.scroll_up)
-        minute_label.bind("<Shift-MouseWheel>", self.scroll_down)
+        minute_label.bind("<MouseWheel>", self.scroll)
 
         colon_label = tk.Label(alarm_window, text=":", bg="#1D2364", fg="white", font=("Helvetica", 44, "bold"))
         colon_label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
@@ -150,19 +148,21 @@ class AlarmScreen(tk.Frame):
                                         fg='white', pady=5, borderless=1)
         delete_button.place(relx=0.3, rely=0.9, anchor=tk.CENTER)
 
-    def scroll_up(self, event):
-        global hour_label, minute_label, hour_var, minute_var
-        if event.widget == hour_label:
-            hour_var.set((hour_var.get() + 1) % 24)
-        elif event.widget == minute_label:
-            minute_var.set((minute_var.get() + 1) % 60)
 
-    def scroll_down(self, event):
+    def scroll(self, event):
         global hour_label, minute_label, hour_var, minute_var
-        if event.widget == hour_label:
-            hour_var.set((hour_var.get() - 1) % 24)
-        elif event.widget == minute_label:
-            minute_var.set((minute_var.get() - 1) % 60)
+        if event.delta > 0:  # Scroll up
+            if event.widget == hour_label:
+                hour_var.set((hour_var.get() + 1) % 24)
+            elif event.widget == minute_label:
+                minute_var.set((minute_var.get() + 1) % 60)
+
+        else:  # Scroll down
+            if event.widget == hour_label:
+                hour_var.set((hour_var.get() - 1) % 24)
+            elif event.widget == minute_label:
+                minute_var.set((minute_var.get() - 1) % 60)
+
 
     def on_alarm_click(self, event):
         global alarm_label, alarm_window, hour_var, minute_var, hour_label, minute_label
@@ -179,14 +179,12 @@ class AlarmScreen(tk.Frame):
         hour_label = tk.Label(alarm_window, textvariable=hour_var, fg="white", bg="#1D2364",
                               font=("Helvetica", 44, "bold"))
         hour_label.place(relx=0.4, rely=0.4, anchor=tk.CENTER)
-        hour_label.bind("<MouseWheel>", self.scroll_up)
-        hour_label.bind("<Shift-MouseWheel>", self.scroll_down)
+        hour_label.bind("<MouseWheel>", self.scroll)
 
         minute_label = tk.Label(alarm_window, textvariable=minute_var, fg="white", bg="#1D2364",
                                 font=("Helvetica", 44, "bold"))
         minute_label.place(relx=0.61, rely=0.4, anchor=tk.CENTER)
-        minute_label.bind("<MouseWheel>", self.scroll_up)
-        minute_label.bind("<Shift-MouseWheel>", self.scroll_down)
+        minute_label.bind("<MouseWheel>", self.scroll)
 
         colon_label = tk.Label(alarm_window, text=":", bg="#1D2364", fg="white", font=("Helvetica", 44, "bold"))
         colon_label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
@@ -200,26 +198,19 @@ class AlarmScreen(tk.Frame):
         delete_button.place(relx=0.3, rely=0.9, anchor=tk.CENTER)
 
     def set_alarm(self):
+        # retrieve the current alarm time
+        old_alarm = alarm_label.cget('text')
+
         alarm_time = f"{hour_var.get():02d}:{minute_var.get():02d}"
         alarm_label.config(text=alarm_time)
         self.alarm_toggles[alarm_label] = alarm_toggle  # Store alarm toggle button associated with the alarm
         alarm_window.destroy()
         alarm_label.bind("<Button-1>", self.on_alarm_click)
 
-
-        # Insert the alarm into the database
-        # Check if the alarm already exists in the database
-        self.cursor.execute("SELECT * FROM Alarms WHERE alarm_time=?", (alarm_time,))
-        existing_alarm = self.cursor.fetchone()
-
-        if existing_alarm:
-            # If the alarm already exists, update its state
-            self.cursor.execute("UPDATE Alarms SET state=? WHERE alarm_time=?", ('ON', alarm_time))
-        else:
-            # If the alarm doesn't exist, insert a new row
-            self.cursor.execute("INSERT INTO Alarms (alarm_time, state) VALUES (?, ?)", (alarm_time, 'ON'))
-
+        # update the alarm with the new set time
+        self.cursor.execute("UPDATE Alarms SET alarm_time=? WHERE alarm_time=?", (alarm_time, old_alarm))
         self.conn.commit()
+
 
     def delete_alarm(self, alarm_label):
         global alarm_toggles, alarm_y

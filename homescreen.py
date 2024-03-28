@@ -27,7 +27,7 @@ class HomeScreen(tk.Frame):
         self.time_label.pack()
 
         # Display the date of the current image
-        self.date_label = tk.Label(self, font=("Helvetica", 14), bg="#1D2364", fg="white")
+        self.date_label = tk.Label(self, font=("Helvetica", 24), bg="#1D2364", fg="white")
         self.date_label.pack()
 
         self.update_time_date()
@@ -149,7 +149,7 @@ class HomeScreen(tk.Frame):
         space_between_buttons = (parent_width - (5 * button_width)) / 6  # Equally space out buttons
 
         # Button 1
-        button1 = tk.Button(self, text="Descriptions", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("DescriptionScreen"))
+        button1 = tk.Button(self, text="Description", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("DescriptionScreen"))
         button1.place(x=space_between_buttons, y=520, width=button_width, height=30)  # Adjust y for bottom placement
         # Button 2
         button2 = tk.Button(self, text="Meaning", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("MeaningScreen"))
