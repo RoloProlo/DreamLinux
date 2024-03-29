@@ -3,7 +3,8 @@ from tkinter import ttk
 from tkmacosx import Button
 from datetime import datetime
 import sqlite3
-from homescreen import HomeScreen
+# from homescreen import HomeScreen
+from database import DB
 
 
 class DescriptionScreen(tk.Frame):
@@ -14,28 +15,28 @@ class DescriptionScreen(tk.Frame):
         self.controller = controller
         self.configure(background='#1D2364')
 
-        self.home_screen = HomeScreen(parent, controller)
-        self.current_image_index = self.home_screen.current_image_index 
+        # self.home_screen = HomeScreen(parent, controller)
+        self.current_image_index = 0
 
 
-        # Connect to the SQLite database for dream images
-        self.conn = sqlite3.connect('DreamImages.db')
-        self.cursor = self.conn.cursor()
         self.text_widget = tk.Text
 
         # Retrieve index of dream image displayed on the homescreen
         # current_index = 0
 
         # Access the data of the current dream image in the DreamImages database
-        self.cursor.execute("SELECT * FROM DreamImages ORDER BY date DESC LIMIT 1 OFFSET ?", (self.current_image_index,))
-        self.dream_image_data = self.cursor.fetchone()
+        # self.dream_image_data = DB().open_dream_data(self.current_image_index)
+
+        self.display_current_description(self.current_image_index)
 
         # Assuming the description is stored in the third column (index 2)
         self.description = self.dream_image_data[3]
 
         self.setup_ui()
 
+
     def setup_ui(self):
+        print("Description that is now stored: \n", self.description)
         self.clock_label.pack(pady=10, padx=10)
         self.update_clock()
 
@@ -57,6 +58,7 @@ class DescriptionScreen(tk.Frame):
         self.text_widget.config(height=self.text_widget_height, highlightbackground="#8E97FF", highlightthickness=0)
         canvas.create_window(80, 60, window=self.text_widget, anchor="nw", width=650, height=self.text_widget_height)
         canvas.create_window(750, 60, window=scrollbar, anchor="nw", width=20, height=350)
+
 
         # date of dream image (Assuming the date is stored in the first column)
         date = self.dream_image_data[1]
@@ -83,6 +85,25 @@ class DescriptionScreen(tk.Frame):
         decrease_button.place(relx=0.93, rely=0.5, anchor=tk.CENTER)
 
         back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+
+
+    def display_current_description(self, index):
+        # Access the data of the current dream image in the DreamImages database
+        self.dream_image_data = DB().open_dream_data(index)
+
+        # Assuming the description is stored in the third column (index 2)
+        self.description = self.dream_image_data[3]
+
+        # Clear the text widget before inserting new text
+        ## VOLGENS GPT ZOU DIT MOETEN WERKEN, MAAR HET DOET HET NIET
+        # self.text_widget.config(state=tk.NORMAL)
+        # self.text_widget.delete('1.0', tk.END)
+        # self.text_widget.insert(tk.END, self.description)
+        # self.text_widget.config(state=tk.DISABLED)
+
+        # self.setup_ui()
+
+        return self.dream_image_data
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")

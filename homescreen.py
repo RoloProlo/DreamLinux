@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import sqlite3
 from datetime import datetime
-# from descriptionscreen import DescriptionScreen
+from descriptionscreen import DescriptionScreen
 
 
 class HomeScreen(tk.Frame):
@@ -13,7 +13,7 @@ class HomeScreen(tk.Frame):
         self.controller = controller
         self.configure(background='#1D2364')
 
-        # self.description_screen = DescriptionScreen(parent, controller)  # Reference to DescriptionScreen instance
+        self.description_screen = DescriptionScreen(parent, controller)  # Reference to DescriptionScreen instance
 
         self.image_list = []
         self.current_image_index = 0
@@ -91,9 +91,8 @@ class HomeScreen(tk.Frame):
         if self.current_image_index < len(self.image_list) - 1:
             self.current_image_index += 1
             self.display_current_image()
-            # try out
-            self.update_current_index(self.current_image_index)  # Update current_index in DescriptionScreen
-
+            self.description_screen.display_current_description(self.current_image_index)
+    
 
     def next_image(self):
         if self.current_image_index > 0:

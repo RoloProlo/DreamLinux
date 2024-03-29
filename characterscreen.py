@@ -4,6 +4,7 @@ from datetime import datetime
 import sqlite3
 from tkmacosx import Button
 from characterdetailscreen import CharacterDetailScreen
+from database import DB
 
 class CharacterScreen(tk.Frame):
     def __init__(self, parent, controller):
@@ -21,7 +22,7 @@ class CharacterScreen(tk.Frame):
         # Database connection
         self.conn = sqlite3.connect('DreamImages.db')
         self.cursor = self.conn.cursor()
-        self.cursor.execute("SELECT * FROM DreamImages LIMIT 1 OFFSET 0")
+        self.cursor.execute("SELECT * FROM DreamImages ORDER BY date DESC LIMIT 1 OFFSET 0")
         self.dream_image_data = self.cursor.fetchone()
 
         # Date Label
@@ -47,14 +48,8 @@ class CharacterScreen(tk.Frame):
         self.back_button.pack(side=tk.RIGHT, padx=10, pady=10)
 
     def initialize_characters(self):
-        # Assuming you have a table "Characters" with a column "name" for character names
-        self.conn_characters = sqlite3.connect('Characters.db')
-        self.cursor_characters = self.conn_characters.cursor()
-        self.cursor_characters.execute("SELECT name FROM Characters")
-        self.characters = self.cursor_characters.fetchall()  # This will be a list of tuples
+        self.characters = DB().open_character_data()
 
-        # Close the connection if not needed further or keep it open if you'll need it later
-        # self.conn_characters.close()
 
     def display(self, characters):
         self.canvas.delete("all")  # Clear existing characters
@@ -114,6 +109,8 @@ class CharacterScreen(tk.Frame):
     # Assuming this method is within CharacterScreen class
     def on_character_click(self, name):
         # Example of fetching character description
+        self.conn_characters = sqlite3.connect('Characters.db')
+        self.cursor_characters = self.conn_characters.cursor()
         self.cursor_characters.execute("SELECT description FROM Characters WHERE name=?", (name,))
         row = self.cursor_characters.fetchone()
         if row:
