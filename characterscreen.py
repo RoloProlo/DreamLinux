@@ -1,117 +1,146 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from datetime import datetime, date
+from datetime import datetime
 import sqlite3
-import sys
-from PIL import ImageTk, Image
-import subprocess
 from tkmacosx import Button
-
+from characterdetailscreen import CharacterDetailScreen
 
 class CharacterScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        self.controller = controller  # Set the controller attribute
-        tk.Frame.__init__(self, parent)
+        self.controller = controller
         self.configure(background='#1D2364')
+        #self.character_details = CharacterDetailScreen  # Placeholder for the character details screen
 
+
+        # Clock Label
         self.clock_label = tk.Label(self, font=("Helvetica", 44, "bold"), bg="#1D2364", fg="white")
-
-        # Connect to the SQLite database for dream images
-        conn = sqlite3.connect('DreamImages.db')
-        cursor = conn.cursor()
-        # Connect to the SQLite database for character information
-        conn_characters = sqlite3.connect('Characters.db')
-        cursor_characters = conn_characters.cursor()
-
-        current_index = 0
-        # Access the data of the current dream image in the DreamImages database
-        cursor.execute("SELECT * FROM DreamImages LIMIT 1 OFFSET ?", (current_index,))
-        self.dream_image_data = cursor.fetchone()
-
-        self.date = self.dream_image_data[1]
-
-        cursor_characters.execute("SELECT name FROM Characters")
-        self.characters = cursor_characters.fetchall()
-
-        # Get the character names associated with this DreamImage
-        character_names = self.dream_image_data[5].split(', ') if self.dream_image_data else []
-
-        self.setup_ui()
-
-    def setup_ui(self):
         self.clock_label.pack(pady=10, padx=10)
         self.update_clock()
 
-        self.date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
+        # Database connection
+        self.conn = sqlite3.connect('DreamImages.db')
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("SELECT * FROM DreamImages LIMIT 1 OFFSET 0")
+        self.dream_image_data = self.cursor.fetchone()
 
-        # Define buttons
-        seeAll_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
-        back_button = Button(self, text='Back to image', command=self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
+        # Date Label
+        self.date_label = tk.Label(self, text=self.dream_image_data[1] if self.dream_image_data else "No Date", font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat")
+        self.date_label.pack(pady=(0, 20))
 
-        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
-        self.date.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
-        seeAll_button.place(relx=0.65, rely=0.95, anchor=tk.CENTER)
-        back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+        # Canvas for characters
+        self.canvas = tk.Canvas(self, bg="#1D2364", highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
+        self.initialize_characters()
+
+        # Load characters if any
+        if self.dream_image_data:
+            self.display(self.dream_image_data[5].split(', ') if self.dream_image_data[5] else [])
+
+        self.setup_character_view()
+
+
+        # Buttons
+        self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
+        self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.see_all_button.pack(side=tk.LEFT, padx=10, pady=10)
+        self.back_button.pack(side=tk.RIGHT, padx=10, pady=10)
+
+    def initialize_characters(self):
+        # Assuming you have a table "Characters" with a column "name" for character names
+        self.conn_characters = sqlite3.connect('Characters.db')
+        self.cursor_characters = self.conn_characters.cursor()
+        self.cursor_characters.execute("SELECT name FROM Characters")
+        self.characters = self.cursor_characters.fetchall()  # This will be a list of tuples
+
+        # Close the connection if not needed further or keep it open if you'll need it later
+        # self.conn_characters.close()
 
     def display(self, characters):
+        self.canvas.delete("all")  # Clear existing characters
         symbol = self.open_symbol()
-        x_offset, y_offset = 30, 10  # Starting positions
 
+        # Store references to canvas items if needed for interaction or later updates
+        self.canvas_items = []
+
+        x_offset, y_offset = 30, 10
         for name in characters:
-            print(name)
-            char_label = tk.Label(self, image=symbol)
-            char_label.image = symbol  # Keep a reference.
-            char_label.place(x=x_offset, y=y_offset)
+            char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
+            char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", 24, "bold"), fill="white")
 
-            name_label = tk.Label(self, text=name, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white")
-            name_label.place(x=x_offset, y=y_offset + 170)
+            # Example of binding a click event to each character image
+            self.canvas.tag_bind(char_image, '<Button-1>', lambda e, name=name: self.on_character_click(name))
+
+            # Store references if you need to interact with these items later
+            self.canvas_items.append((char_image, char_name))
 
             x_offset += 200
             if x_offset > 750:
                 x_offset = 30
                 y_offset += 200
 
-        back_button = Button(self, text='Back to characters', command=self.controller.show_frame("CharacterScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
-        back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+        # Ensure the symbol image is retained by storing it in an attribute
+        self.symbol_image = symbol
 
+    def setup_character_view(self):
+        # Create a frame for the characters list
+        self.characters_frame = tk.Frame(self, bg="#1D2364")
+        self.characters_frame.pack(fill="both", expand=True, side="bottom")
+
+        # Scrollbar
+        self.char_scrollbar = tk.Scrollbar(self.characters_frame)
+        self.char_scrollbar.pack(side="right", fill="y")
+
+        # Listbox for characters
+        self.char_listbox = tk.Listbox(self.characters_frame, yscrollcommand=self.char_scrollbar.set, width=50, bg="#1D2364", fg="white")
+        self.char_scrollbar.config(command=self.char_listbox.yview)
+
+        self.char_listbox.pack(side="left", fill="both", expand=True)
+
+        # Initially hide the frame
+        self.characters_frame.pack_forget()
+
+        close_button = Button(self.characters_frame, text="Close", command=lambda: self.characters_frame.pack_forget(), bg='#414BB2', fg='white')
+        close_button.pack()
 
     def open_symbol(self):
-        image = Image.open("images/character_symbol.jpg")
-        # Resize the image
-        image = image.resize((160, 160), Image.Resampling.LANCZOS)
-
-        # Convert the Image object into a Tkinter-compatible photo image
-        photo = ImageTk.PhotoImage(image)
-
-        return photo
+        image = Image.open("images/character_symbol.jpg").resize((160, 160), Image.Resampling.LANCZOS)
+        return ImageTk.PhotoImage(image)
 
     def update_clock(self):
-        current_time = datetime.now().strftime("%H:%M")
-        self.clock_label.config(text=current_time)
-        self.clock_label.after(1000, self.update_clock)  # Update every 1000 milliseconds (1 second)
+        self.clock_label.config(text=datetime.now().strftime("%H:%M"))
+        self.clock_label.after(1000, self.update_clock)
 
-    def on_symbol_click(self, event):
-        # Get the item ID of the clicked object
-        current_tags = event.widget.find_withtag(tk.CURRENT)
-        if current_tags:
-            item_id = current_tags[0]
-            ...
+    # Assuming this method is within CharacterScreen class
+    def on_character_click(self, name):
+        # Example of fetching character description
+        self.cursor_characters.execute("SELECT description FROM Characters WHERE name=?", (name,))
+        row = self.cursor_characters.fetchone()
+        if row:
+            description = row[0] or "No description available"  # Ensure description is not None
+            if not isinstance(description, str):
+                description = str(description)  # Convert description to string if necessary
+
+            # Assuming CharacterDetailScreen is properly imported and accessible
+            if hasattr(self, 'character_details') and self.character_details:
+                self.character_details.hide_screen()  # Hide existing detail screen if it exists
+
+            self.character_details = CharacterDetailScreen(self, self.controller, name, description)
+            self.character_details.show_screen()
         else:
-            print("debug")
-            return
-
-        # Get the text associated with the clicked object
-        character_name = event.widget.find_withtag(f'{item_id}_text')[0]
-        text = event.widget.itemcget(character_name, 'text')
+            print(f"No description found for character: {name}")
 
     def see_all(self):
-        self.names = []
-        for name_tuple in self.characters:
-            self.names.append(name_tuple[0])
+        # Clear existing entries
+        self.char_listbox.delete(0, tk.END)
 
-        self.display(self.names)
+        # Populate the listbox with character names
+        for name_tuple in self.characters:
+            self.char_listbox.insert(tk.END, name_tuple[0])
+
+        # Show the characters frame
+        self.characters_frame.pack(fill="both", expand=True, side="bottom")
 
     def go_back(self):
         self.controller.show_frame("HomeScreen")
-        self.conn.close()  # Close the database connection when leaving this screen
+        self.conn.close()
