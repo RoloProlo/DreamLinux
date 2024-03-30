@@ -46,6 +46,9 @@ class StoryScreen(tk.Frame):
         self.back_button = Button(self, text='Go Back', command=self.go_back, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
+        self.text_input = tk.Entry(self, font=("Helvetica", 20), width=30)
+        self.text_input.place(relx=0.3, rely=0.75, anchor=tk.CENTER)
+
         self.update_clock()
 
         # back_button = Button(self, text='Go Back', command=lambda: self.go_back(), bg='#414BB2', fg='white', pady=10, borderless=1)
@@ -56,9 +59,18 @@ class StoryScreen(tk.Frame):
         #
         # self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
         # self.canvas.place(x=100, y=100, width=850, height=430)
+
     def skip_dev(self):
+        # Get the description from the Entry widget
+        typed_description = self.text_input.get().strip()
+
+        # Check if the description is empty and use a default value or the typed value
+        if not typed_description:
+            typed_description = "Default prompt if the user didn't type anything."
+
+        # Pass the typed description to the GenerationScreen
         generation_screen = self.controller.get_frame("GenerationScreen")
-        generation_screen.start_gen("testing this prompt")
+        generation_screen.start_gen(typed_description)
         self.controller.show_frame("GenerationScreen")
 
     def update_clock(self):

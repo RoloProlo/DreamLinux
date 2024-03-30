@@ -17,7 +17,9 @@ class HomeScreen(tk.Frame):
 
         self.image_list = []
         self.current_image_index = 0
+        self.current_id = 0
         self.fullscreen_overlay = None
+        self.overlay_label = None
 
         self.image_label = None  # Initialize image_label
 
@@ -36,6 +38,12 @@ class HomeScreen(tk.Frame):
         self.display_current_image()
         self.create_buttons()
 
+    def reset_screen(self):
+        self.load_images_from_database()
+        self.setup_ui()
+
+
+
     def update_time_date(self):
         now = datetime.now()
         self.time_label.config(text=now.strftime("%H:%M:%S"))
@@ -44,13 +52,15 @@ class HomeScreen(tk.Frame):
     def load_images_from_database(self):
         conn = sqlite3.connect('DreamImages.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT date, image FROM DreamImages ORDER BY date DESC")
+        cursor.execute("SELECT id, date, image FROM DreamImages ORDER BY date DESC")
         self.image_list = cursor.fetchall()
-        print()
         conn.close()
 
     def display_current_image(self):
+
+        self.controller.set_shared_data("current_image_index", self.current_image_index)
         # Ensure there are images to display
+        self.current_id = len(self.image_list) - self.current_image_index
         if not self.image_list or self.current_image_index >= len(self.image_list):
             # Optionally, display a placeholder or message when there are no images
             if self.image_label is not None:
@@ -64,7 +74,11 @@ class HomeScreen(tk.Frame):
             self.image_label.destroy()
 
         # Get the current image and date
-        current_date, image_path = self.image_list[self.current_image_index]
+        # Assuming you only need date and image_path, and id is not used directly here.
+        _, current_date, image_path = self.image_list[self.current_image_index]
+        self.controller.set_shared_data("current_image_index", self.current_image_index)
+        self.controller.set_shared_data("current_id", self.current_id)
+
 
         # Update the image
         original_image = Image.open(image_path)
@@ -86,18 +100,19 @@ class HomeScreen(tk.Frame):
         self.current_image_index = index
         print("updated index: ", index)
 
-
     def previous_image(self):
         if self.current_image_index < len(self.image_list) - 1:
             self.current_image_index += 1
+            self.controller.set_shared_data("current_image_index", self.current_image_index)
             self.display_current_image()
-            self.description_screen.display_current_description(self.current_image_index)
-    
+            print(self.current_image_index)
 
     def next_image(self):
         if self.current_image_index > 0:
             self.current_image_index -= 1
+            self.controller.set_shared_data("current_image_index", self.current_image_index)
             self.display_current_image()
+            print(self.current_image_index)
 
     def enlarge_image(self, image_path):
         # Clear the window
@@ -124,21 +139,31 @@ class HomeScreen(tk.Frame):
         self.fullscreen_overlay = ImageTk.PhotoImage(resized_image)
 
         # Place the image Label to fill the window and align it centered vertically
-        overlay_label = tk.Label(self, image=self.fullscreen_overlay, background='#1D2364')
-        overlay_label.place(x=0, y=(600 - new_height) // 2)  # Center vertically
-        overlay_label.bind("<Button-1>", self.exit_fullscreen)
+        self.overlay_label = tk.Label(self, image=self.fullscreen_overlay, background='#1D2364')
+        self.overlay_label.place(x=0, y=(600 - new_height) // 2)  # Adjust positioning
+        self.overlay_label.bind("<Button-1>", self.exit_fullscreen)
 
+    def refresh_images(self):
+        """Refresh the list of images from the database and display the latest one."""
+        self.load_images_from_database()
+        # Reset the current image index to show the latest image
+        if self.image_list:
+            self.current_image_index = 0
+        self.display_current_image()
 
     def exit_fullscreen(self, event=None):
-        # Hide the overlay
-        if self.overlay_label:
+        # Only try to destroy the overlay if it exists
+        if self.overlay_label is not None:
             self.overlay_label.destroy()
             self.overlay_label = None
-
-        # Restore the widgets (or rebuild the interface as it was before enlarging)
+        # Restore the widgets or rebuild the interface as needed
         self.display_current_image()
         self.create_buttons()
-        # ...
+
+    def go_description(self):
+        self.controller.show_frame("DescriptionScreen")
+        description_screen = self.controller.get_frame("DescriptionScreen")
+        description_screen.setup_ui()  # Ensure this method updates the UI based on the current index
 
     def create_buttons(self):
 
@@ -156,7 +181,7 @@ class HomeScreen(tk.Frame):
         space_between_buttons = (parent_width - (5 * button_width)) / 6  # Equally space out buttons
 
         # Button 1
-        button1 = tk.Button(self, text="Description", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("DescriptionScreen"))
+        button1 = tk.Button(self, text="Description", pady=10, bg='#8E97FF', fg='white', command=self.go_description)
         button1.place(x=space_between_buttons, y=520, width=button_width, height=30)  # Adjust y for bottom placement
         # Button 2
         button2 = tk.Button(self, text="Meaning", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("MeaningScreen"))

@@ -14,9 +14,12 @@ class DescriptionScreen(tk.Frame):
         self.text_widget_height = 350  # Adjust this value as needed
         self.controller = controller
         self.configure(background='#1D2364')
-
+        self.description = ""  # Initialize description as an empty string
         # self.home_screen = HomeScreen(parent, controller)
         self.current_image_index = 0
+        # self.dream_image_data = []
+        self.description = ""
+        self.date = ""
 
 
         self.text_widget = tk.Text
@@ -27,15 +30,16 @@ class DescriptionScreen(tk.Frame):
         # Access the data of the current dream image in the DreamImages database
         # self.dream_image_data = DB().open_dream_data(self.current_image_index)
 
-        self.display_current_description(self.current_image_index)
+        # self.display_current_description(self.current_image_index)
 
         # Assuming the description is stored in the third column (index 2)
-        self.description = self.dream_image_data[3]
+        # self.description = self.dream_image_data[3]
 
         self.setup_ui()
 
 
     def setup_ui(self):
+        self.display_current_description()
         print("Description that is now stored: \n", self.description)
         self.clock_label.pack(pady=10, padx=10)
         self.update_clock()
@@ -61,8 +65,8 @@ class DescriptionScreen(tk.Frame):
 
 
         # date of dream image (Assuming the date is stored in the first column)
-        date = self.dream_image_data[1]
-        date = tk.Label(self, text=date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
+
+        date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
 
         # add button to go back
         back_button = tk.Button(self, text="Go Back", command=lambda: self.go_back())
@@ -84,26 +88,24 @@ class DescriptionScreen(tk.Frame):
         increase_button.place(relx=0.93, rely=0.4, anchor=tk.CENTER)
         decrease_button.place(relx=0.93, rely=0.5, anchor=tk.CENTER)
 
+
         back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+        # self.after(100, self.display_current_description)  # Delay added to ensure current index is fetched after the screen is fully initialized
 
+    def display_current_description(self):
+        current_image_index = self.controller.get_shared_data("current_image_index")
+        current_id = self.controller.get_shared_data("current_id")
+        print(current_id)
+        conn = sqlite3.connect('DreamImages.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM DreamImages WHERE id=?", (current_id,))
+        row = cursor.fetchone()
 
-    def display_current_description(self, index):
-        # Access the data of the current dream image in the DreamImages database
-        self.dream_image_data = DB().open_dream_data(index)
-
-        # Assuming the description is stored in the third column (index 2)
-        self.description = self.dream_image_data[3]
-
-        # Clear the text widget before inserting new text
-        ## VOLGENS GPT ZOU DIT MOETEN WERKEN, MAAR HET DOET HET NIET
-        # self.text_widget.config(state=tk.NORMAL)
-        # self.text_widget.delete('1.0', tk.END)
-        # self.text_widget.insert(tk.END, self.description)
-        # self.text_widget.config(state=tk.DISABLED)
-
-        # self.setup_ui()
-
-        return self.dream_image_data
+        if row:
+            self.description = row[3]  # Assuming the description is in the 4th column
+        else:
+            self.description = "Description not available"
+        conn.close()
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")
@@ -121,4 +123,4 @@ class DescriptionScreen(tk.Frame):
 
     def go_back(self):
         self.controller.show_frame("HomeScreen")
-        self.conn.close()  # Close the database connection when leaving this screen
+        # self.conn.close()  # Close the database connection when leaving this screen

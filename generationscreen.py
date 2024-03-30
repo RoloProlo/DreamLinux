@@ -6,7 +6,8 @@ import requests
 from io import BytesIO
 import os
 from datetime import datetime
-
+from tkmacosx import Button
+import sqlite3
 from openai import OpenAI
 
 
@@ -25,6 +26,11 @@ class GenerationScreen(tk.Frame):
         self.global_img = None
         self.image_label = tk.Label(self)
         self.image_label.pack(fill="both", expand=True)  # Pre-pack the label to ensure it's ready
+        self.conn = sqlite3.connect('DreamImages.db')
+        self.cursor = self.conn.cursor()
+
+        self.back_button = Button(self, text='Go Back', command=self.go_back, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
     def start_gen(self, description):
         self.description = description
@@ -63,52 +69,30 @@ class GenerationScreen(tk.Frame):
 
                 # Update the global image object and display the image
                 self.global_img = Image.open(image_bytes)
+
                 self.save_image()
-                self.update_image_fullscreen()  # Call updated method to display the image fullscreen
+                # self.update_image_fullscreen()  # Call updated method to display the image fullscreen
                 # self.save_image()
             except KeyError as e:
                 messagebox.showerror("Error", f"Failed to parse image data. {e}")
         else:
             messagebox.showerror("Error", "Failed to generate image. Please check your API key and internet connection.")
 
-    def update_image_fullscreen(self):
-        image = self.global_img
-        width, height = image.size
+    def insert_image_into_database(self, image_path, description):
+        conn = sqlite3.connect('DreamImages.db')  # Adjust with your actual database path
+        cursor = conn.cursor()
 
-        # Set the new width to the window width and scale height to maintain aspect ratio
-        window_width = 1024
-        new_height = int(height * (window_width / width))
-        resized_image = image.resize((window_width, new_height), Image.Resampling.LANCZOS)
+        # Prepare data
+        date_str = datetime.now().strftime('%d/%m/%Y')
+        # Assuming the description variable contains the image description
+        # Leave 'meaning' and 'characters' as empty strings or NULL if not applicable
+        query = '''INSERT INTO DreamImages (date, image, description, meaning, characters)
+                   VALUES (?, ?, ?, ?, ?)'''
+        cursor.execute(query, (date_str, image_path, description, '', ''))
 
-        # If the resized height is greater than the window height, we need to crop the top and bottom
-        if new_height > 600:
-            # Calculate the amount to crop from the top and bottom
-            crop_amount = (new_height - 600) // 2
-            # Crop the image to the new dimensions to fit the window size exactly
-            resized_image = resized_image.crop((0, crop_amount, window_width, new_height - crop_amount))
-            new_height = 600  # After cropping, the height is the window height
+        conn.commit()
+        conn.close()
 
-        self.fullscreen_overlay = ImageTk.PhotoImage(resized_image)
-
-        # Place the image Label to fill the window and align it centered vertically
-        overlay_label = tk.Label(self, image=self.fullscreen_overlay, background='#1D2364')
-        overlay_label.place(x=0, y=(600 - new_height) // 2)  # Center vertically
-        overlay_label.bind("<Button-1>", self.exit_fullscreen)
-
-
-        # if self.global_img:
-        #     img_resized = self.global_img.resize((self.winfo_screenwidth(), self.winfo_screenheight()), Image.Resampling.LANCZOS)
-        #     photo = ImageTk.PhotoImage(img_resized)
-        #     self.image_label.configure(image=photo)
-        #     self.image_label.image = photo  # Keep a reference to avoid garbage collection
-        # else:
-        #     messagebox.showinfo("No Image", "There is no image to display.")
-
-    def exit_fullscreen(self, event=None):
-        # Hide the overlay
-        if self.overlay_label:
-            self.overlay_label.destroy()
-            self.overlay_label = None
 
     def save_image(self):
         if self.global_img is not None:
@@ -129,15 +113,15 @@ class GenerationScreen(tk.Frame):
 
             # Save the image
             self.global_img.save(file_path)
+            self.insert_image_into_database(file_path, self.description)
             print(f"Image saved as {file_path}")  # Optional: print the path for confirmation
         else:
             messagebox.showinfo("No Image", "There is no image to save. Please generate an image first.")
-    #
-    # def update_image(self, image_path):
-    #     # Load and display the image specified by image_path
-    #     img = Image.open(image_path)
-    #     img = img.resize((self.winfo_screenwidth(), self.winfo_screenheight()), Image.Resampling.LANCZOS)
-    #     photo = ImageTk.PhotoImage(img)
-    #     self.image_label.config(image=photo)
-    #     self.image_label.image = photo  # Keep a reference!
-    #     self.image_label.pack(fill="both", expand=True)
+
+
+    def go_back(self):
+        home_screen = self.controller.get_frame("HomeScreen")
+        if home_screen:
+            home_screen.refresh_images()
+        self.controller.show_frame("HomeScreen")
+        self.conn.close()  # Close the database connection when leaving this screen
