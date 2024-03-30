@@ -1,7 +1,6 @@
 import tkinter as tk
 from gtts import gTTS
 from tkmacosx import Button
-
 import pygame
 import pyaudio
 import sounddevice as sd
@@ -18,16 +17,18 @@ import soundfile as sf  # For saving the recording
 import threading
 import speech_recognition as sr
 
-
 class StoryScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.confirm_button = Button(self, text="Confirm", command=self.confirm_recording, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.again_button = Button(self, text="Again", command=self.restart_recording, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.controller = controller
         self.configure(background='#1D2364')
         self.clock_label = tk.Label(self, font=("Helvetica", 44, "bold"), bg="#1D2364", fg="white")
         self.canvas = tk.Canvas(self, bg="#1D2364", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
         self.setup_ui()
+        self.description = ""
         self.stop_recording = False
         self.recording_thread = None
 
@@ -38,6 +39,9 @@ class StoryScreen(tk.Frame):
 
         self.start_button = Button(self, text='Start Speech', command=self.start_conversation, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.start_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
+
+        self.skip_button = Button(self, text='Skip', command=lambda: self.skip_dev(), bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.skip_button.place(relx=0.3, rely=0.95, anchor=tk.CENTER)
 
         self.back_button = Button(self, text='Go Back', command=self.go_back, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
@@ -52,6 +56,10 @@ class StoryScreen(tk.Frame):
         #
         # self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
         # self.canvas.place(x=100, y=100, width=850, height=430)
+    def skip_dev(self):
+        generation_screen = self.controller.get_frame("GenerationScreen")
+        generation_screen.start_gen("testing this prompt")
+        self.controller.show_frame("GenerationScreen")
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")
@@ -105,6 +113,7 @@ class StoryScreen(tk.Frame):
             # Transcribe the audio file
             text = recognizer.recognize_google(audio_data)
             print("Transcribed text:", text)
+            self.description = text
             # Update the right speech bubble with the transcribed text
             self.update_speech_bubble(text, 1)
         except sr.UnknownValueError:
@@ -159,10 +168,10 @@ class StoryScreen(tk.Frame):
             self.recording_thread.join()
 
     def show_confirmation_buttons(self):
+        self.confirm_button = Button(self, text="Confirm", command=self.confirm_recording, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.again_button = Button(self, text="Again", command=self.restart_recording, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.again_button.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
 
-        self.confirm_button = Button(self, text="Confirm", command=self.confirm_recording, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.confirm_button.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
 
     def restart_recording(self):
@@ -170,10 +179,21 @@ class StoryScreen(tk.Frame):
         self.confirm_button.place_forget()
         self.start_conversation()
 
+    def give_description(self):
+        return self.description
+
     def confirm_recording(self):
         print("Confirmed transcription.")
+        description = self.description
         self.again_button.place_forget()
         self.confirm_button.place_forget()
+
+        generation_screen = self.controller.get_frame("GenerationScreen")
+        generation_screen.start_gen(description)
+        self.controller.show_frame("GenerationScreen")
+
+
+
 
     def go_back(self):
         self.controller.show_frame("HomeScreen")
