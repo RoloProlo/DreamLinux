@@ -14,6 +14,7 @@ class CharacterDetailScreen(tk.Frame):
         self.character_name = character_name
         self.character_description = character_description  # Make sure to include this in the arguments
 
+
         # Define all your widgets here
         self.name_label = tk.Label(self, text=self.character_name, font=("Helvetica", 24, "bold"), fg="white", bg="#8E97FF")
         self.description_title_label = tk.Label(self, text="Description", font=("Helvetica", 24, "bold"), fg="white", bg="#8E97FF")

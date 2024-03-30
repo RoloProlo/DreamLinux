@@ -65,7 +65,7 @@ class DescriptionScreen(tk.Frame):
         date = tk.Label(self, text=date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
 
         # add button to go back
-        back_button = tk.Button(self, text="Go Back", command=lambda: self.controller.show_frame("HomeScreen"))
+        back_button = tk.Button(self, text="Go Back", command=lambda: self.go_back())
 
         # Create buttons for adjusting text size
         text_size = tk.Label(self, text="Text size", font=("Helvetica", 24, "bold"), bg='#1D2364', fg='white')
