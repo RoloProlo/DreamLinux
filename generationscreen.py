@@ -18,13 +18,13 @@ class GenerationScreen(tk.Frame):
         self.configure(background='#1D2364')
         self.canvas = tk.Canvas(self, bg="#1D2364", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
-        self.description = "I dreamt about an elephant that lived in a rainbow castle"
+        self.description = "I dreamt that I was at the beach. while I was swimming in the sea, a monkey stole my bag"
         self.meaning = ""
         self.characters = ""
         self.image_label = tk.Label(self)  # Placeholder for the image
         self.text_label = tk.Label(self, font=("Helvetica", 20), bg="#1D2364", fg="white", wraplength=parent.winfo_screenwidth())  # To display the transcribed text
         self.text_label.pack(side="top", pady=20)  # Adjust positioning as needed
-        self.API_KEY = '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'
+        self.API_KEY = ''
         self.global_img = None
         self.image_label = tk.Label(self)
         self.image_label.pack(fill="both", expand=True)  # Pre-pack the label to ensure it's ready
@@ -38,9 +38,9 @@ class GenerationScreen(tk.Frame):
 
     def start_gen(self, description):
         self.description = description
-        self.generate_and_display_image(self.description)
         self.generate_meaning(self.description)
         self.generate_characters(self.description)
+        self.generate_and_display_image(self.description)
 
     def generate_and_display_image(self, prompt):
         if not prompt:
@@ -114,9 +114,7 @@ class GenerationScreen(tk.Frame):
             # Assuming the response['data'] contains text
             try:
                 meaning = response.json()['choices'][0]['text'].strip()
-                messagebox.showinfo("Meaning", meaning)
-
-                # self.save_image()
+                self.meaning = meaning
                 print(meaning)
    
             except KeyError as e:
@@ -129,7 +127,8 @@ class GenerationScreen(tk.Frame):
             messagebox.showinfo("Input Required", "Please enter a dream description.")
             return
 
-        enhanced_prompt = f"consider this story: {prompt}. Give me a list of all the characters, with no subdivision. every single character should be mentioned separately on its own line"
+        enhanced_prompt = f"consider this story: {prompt}. Give me a list of all the characters, with no subdivision. \
+                    Every single character should be mentioned separately on its own line. Only include characters that are explicitely mentioned."
 
         headers = {
             "Authorization": f"Bearer {self.API_KEY}"
@@ -139,7 +138,7 @@ class GenerationScreen(tk.Frame):
             "model": "gpt-3.5-turbo-instruct",
             "prompt": enhanced_prompt,
             "max_tokens": 100,  # Adjust as needed
-            "temperature": 0.7,  # Adjust as needed
+            "temperature": 0.5,  # Adjust as needed <= could be helpful to adjust (lower = less creativity)
             "top_p": 1,  # Adjust as needed
             "frequency_penalty": 0,  # Adjust as needed
             "presence_penalty": 0,  # Adjust as needed
@@ -153,16 +152,22 @@ class GenerationScreen(tk.Frame):
             # Assuming the response['data'] contains text
             try:
                 characters = response.json()['choices'][0]['text'].strip()
-                messagebox.showinfo("Characters", characters)
-                self.characters = characters  # Store the characters for future use
-                print(characters)
+                # self.characters = characters  # Store the characters for future use
+                # Split the text into lines and extract characters
+                characters_list = [line.split(". ")[1] for line in characters.split("\n") if line.strip()]
+                print("list: ", characters_list)
+                # Join characters with comma and save as a string
+                characters_string = ', '.join(characters_list)
+                self.characters = characters_string  # Store the characters list for future use
+                print(characters_string)
+                # print(characters)
             except KeyError as e:
                 messagebox.showerror("Error", f"Failed to parse character data. {e}")
         else:
             messagebox.showerror("Error", "Failed to prompt for characters. Please check your API key and internet connection.")
 
 
-    def insert_image_into_database(self, image_path, description):
+    def insert_image_into_database(self, image_path, description, meaning, characters):
         conn = sqlite3.connect('DreamImages.db')  # Adjust with your actual database path
         cursor = conn.cursor()
 
@@ -172,7 +177,7 @@ class GenerationScreen(tk.Frame):
         # Leave 'meaning' and 'characters' as empty strings or NULL if not applicable
         query = '''INSERT INTO DreamImages (date, image, description, meaning, characters)
                    VALUES (?, ?, ?, ?, ?)'''
-        cursor.execute(query, (date_str, image_path, description, '', ''))
+        cursor.execute(query, (date_str, image_path, description, meaning, characters))
 
         conn.commit()
         conn.close()
@@ -201,7 +206,7 @@ class GenerationScreen(tk.Frame):
 
             # Save the image
             self.global_img.save(file_path)
-            self.insert_image_into_database(file_path, self.description)
+            self.insert_image_into_database(file_path, self.description, self.meaning, self.characters)
             print(f"Image saved as {file_path}")  # Optional: print the path for confirmation
         else:
             messagebox.showinfo("No Image", "There is no image to save. Please generate an image first.")
