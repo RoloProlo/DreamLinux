@@ -130,15 +130,40 @@ class AlarmScreen(tk.Frame):
         hour_label = tk.Label(alarm_window, textvariable=hour_var, fg="white", bg="#1D2364",
                               font=("Helvetica", 44, "bold"))
         hour_label.place(relx=0.4, rely=0.4, anchor=tk.CENTER)
-        hour_label.bind("<MouseWheel>", self.scroll)
+        # hour_label.bind("<MouseWheel>", self.scroll)
 
         minute_label = tk.Label(alarm_window, textvariable=minute_var, fg="white", bg="#1D2364",
                                 font=("Helvetica", 44, "bold"))
         minute_label.place(relx=0.61, rely=0.4, anchor=tk.CENTER)
-        minute_label.bind("<MouseWheel>", self.scroll)
+        # minute_label.bind("<MouseWheel>", self.scroll)
 
         colon_label = tk.Label(alarm_window, text=":", bg="#1D2364", fg="white", font=("Helvetica", 44, "bold"))
         colon_label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
+
+        # Create buttons 
+
+        # Create buttons for incrementing and decrementing hour
+        hour_increment_button = tkmacosx.Button(alarm_window, text='+', command=self.increment_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        hour_increment_button.config(width=50, height=50)
+        hour_increment_button.place(relx=0.4, rely=0.55, anchor=tk.CENTER)
+
+        hour_decrement_button = tkmacosx.Button(alarm_window, text='-', command=self.decrement_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        
+        hour_decrement_button.config(width=50, height=50)
+        hour_decrement_button.place(relx=0.4, rely=0.26, anchor=tk.CENTER)
+
+        # Create buttons for incrementing and decrementing minute
+        minute_increment_button = tkmacosx.Button(alarm_window, text='+', command=self.increment_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        minute_increment_button.config(width=50, height=50)
+        minute_increment_button.place(relx=0.61, rely=0.55, anchor=tk.CENTER)
+
+        minute_decrement_button = tkmacosx.Button(alarm_window, text='-', command=self.decrement_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        minute_decrement_button.config(width=50, height=50)
+        minute_decrement_button.place(relx=0.61, rely=0.26, anchor=tk.CENTER)
 
         set_button = tkmacosx.Button(alarm_window, text='Set', command=set_alarm, bg='#414BB2', fg='white', pady=5,
                                      borderless=1)
@@ -163,6 +188,18 @@ class AlarmScreen(tk.Frame):
             elif event.widget == minute_label:
                 minute_var.set((minute_var.get() - 1) % 60)
 
+    def increment_hour(self):
+        hour_var.set((hour_var.get() + 1) % 24)
+
+    def decrement_hour(self):
+        hour_var.set((hour_var.get() - 1) % 24)
+
+    def increment_minute(self):
+        minute_var.set((minute_var.get() + 1) % 60)
+
+    def decrement_minute(self):
+        minute_var.set((minute_var.get() - 1) % 60)
+
 
     def on_alarm_click(self, event):
         global alarm_label, alarm_window, hour_var, minute_var, hour_label, minute_label
@@ -179,15 +216,40 @@ class AlarmScreen(tk.Frame):
         hour_label = tk.Label(alarm_window, textvariable=hour_var, fg="white", bg="#1D2364",
                               font=("Helvetica", 44, "bold"))
         hour_label.place(relx=0.4, rely=0.4, anchor=tk.CENTER)
-        hour_label.bind("<MouseWheel>", self.scroll)
+        # hour_label.bind("<MouseWheel>", self.scroll)
 
         minute_label = tk.Label(alarm_window, textvariable=minute_var, fg="white", bg="#1D2364",
                                 font=("Helvetica", 44, "bold"))
         minute_label.place(relx=0.61, rely=0.4, anchor=tk.CENTER)
-        minute_label.bind("<MouseWheel>", self.scroll)
+        # minute_label.bind("<MouseWheel>", self.scroll)
 
         colon_label = tk.Label(alarm_window, text=":", bg="#1D2364", fg="white", font=("Helvetica", 44, "bold"))
         colon_label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
+
+        # Create buttons
+
+        # Create buttons for incrementing and decrementing hour
+        hour_increment_button = tkmacosx.Button(alarm_window, text='+', command=self.increment_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        hour_increment_button.config(width=50, height=50)
+        hour_increment_button.place(relx=0.4, rely=0.55, anchor=tk.CENTER)
+
+        hour_decrement_button = tkmacosx.Button(alarm_window, text='-', command=self.decrement_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        
+        hour_decrement_button.config(width=50, height=50)
+        hour_decrement_button.place(relx=0.4, rely=0.26, anchor=tk.CENTER)
+
+        # Create buttons for incrementing and decrementing minute
+        minute_increment_button = tkmacosx.Button(alarm_window, text='+', command=self.increment_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        minute_increment_button.config(width=50, height=50)
+        minute_increment_button.place(relx=0.61, rely=0.55, anchor=tk.CENTER)
+
+        minute_decrement_button = tkmacosx.Button(alarm_window, text='-', command=self.decrement_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+                                                borderless=1, font=("Helvetica", 34, "bold"))
+        minute_decrement_button.config(width=50, height=50)
+        minute_decrement_button.place(relx=0.61, rely=0.26, anchor=tk.CENTER)
 
         set_button = tkmacosx.Button(alarm_window, text='Set', command=self.set_alarm, bg='#414BB2', fg='white', pady=5,
                                      borderless=1)

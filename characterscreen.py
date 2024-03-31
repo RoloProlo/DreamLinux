@@ -11,55 +11,67 @@ class CharacterScreen(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.configure(background='#1D2364')
-        #self.character_details = CharacterDetailScreen  # Placeholder for the character details screen
-
-
-        # Clock Label
         self.clock_label = tk.Label(self, font=("Helvetica", 44, "bold"), bg="#1D2364", fg="white")
+        #self.character_details = CharacterDetailScreen  # Placeholder for the character details screen
+        self.current_image_index = 0
+        self.date = ""
+        self.character_names = ""
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        # Clock Label
         self.clock_label.pack(pady=10, padx=10)
         self.update_clock()
 
-        # Database connection
-        self.conn = sqlite3.connect('DreamImages.db')
-        self.cursor = self.conn.cursor()
-        self.cursor.execute("SELECT * FROM DreamImages ORDER BY date DESC LIMIT 1 OFFSET 0")
-        self.dream_image_data = self.cursor.fetchone()
-
-        # Date Label
-        self.date_label = tk.Label(self, text=self.dream_image_data[1] if self.dream_image_data else "No Date", font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat")
-        self.date_label.pack(pady=(0, 20))
+        # date of dream image (Assuming the date is stored in the first column)
+        date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
 
         # Canvas for characters
         self.canvas = tk.Canvas(self, bg="#1D2364", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
-        self.initialize_characters()
 
-        # Load characters if any
-        if self.dream_image_data:
-            self.display(self.dream_image_data[5].split(', ') if self.dream_image_data[5] else [])
-
+        self.display_characters()
+        
         self.setup_character_view()
-
 
         # Buttons
         self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
         self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
         self.see_all_button.pack(side=tk.LEFT, padx=10, pady=10)
         self.back_button.pack(side=tk.RIGHT, padx=10, pady=10)
+       
+       # SHOW ELEMENTS ON SCREEN
+        date.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
+        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+
 
     def initialize_characters(self):
         self.characters = DB().open_character_data()
 
-
-    def display(self, characters):
+    def display_characters(self):
         self.canvas.delete("all")  # Clear existing characters
+
+        current_image_index = self.controller.get_shared_data("current_image_index")
+        current_id = self.controller.get_shared_data("current_id")
+        print(current_id)
+        conn = sqlite3.connect('DreamImages.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM DreamImages WHERE id=?", (current_id,))
+        row = cursor.fetchone()
+
+        # Get the character names and date associated with this DreamImage
+        self.character_names = row[5].split(', ') if row else []
+        self.date = row[1] if row else []
+        print("names: ", self.character_names)
+
         symbol = self.open_symbol()
 
         # Store references to canvas items if needed for interaction or later updates
         self.canvas_items = []
 
         x_offset, y_offset = 30, 10
-        for name in characters:
+        for name in self.character_names:
             char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
             char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", 24, "bold"), fill="white")
 
@@ -102,9 +114,12 @@ class CharacterScreen(tk.Frame):
         image = Image.open("images/character_symbol.jpg").resize((160, 160), Image.Resampling.LANCZOS)
         return ImageTk.PhotoImage(image)
 
+
     def update_clock(self):
-        self.clock_label.config(text=datetime.now().strftime("%H:%M"))
-        self.clock_label.after(1000, self.update_clock)
+        current_time = datetime.now().strftime("%H:%M")
+        self.clock_label.config(text=current_time)
+        self.after(1000, self.update_clock)  # Use 'self.after' instead of 'self.clock_label.after'
+
 
     # Assuming this method is within CharacterScreen class
     def on_character_click(self, name):
@@ -132,7 +147,7 @@ class CharacterScreen(tk.Frame):
         self.char_listbox.delete(0, tk.END)
 
         # Populate the listbox with character names
-        for name_tuple in self.characters:
+        for name_tuple in self.character_names:
             self.char_listbox.insert(tk.END, name_tuple[0])
 
         # Show the characters frame

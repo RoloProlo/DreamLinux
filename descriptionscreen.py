@@ -3,8 +3,6 @@ from tkinter import ttk
 from tkmacosx import Button
 from datetime import datetime
 import sqlite3
-# from homescreen import HomeScreen
-from database import DB
 
 
 class DescriptionScreen(tk.Frame):
@@ -14,26 +12,11 @@ class DescriptionScreen(tk.Frame):
         self.text_widget_height = 350  # Adjust this value as needed
         self.controller = controller
         self.configure(background='#1D2364')
-        self.description = ""  # Initialize description as an empty string
-        # self.home_screen = HomeScreen(parent, controller)
         self.current_image_index = 0
-        # self.dream_image_data = []
-        self.description = ""
+        self.description = "" # Initialize description as an empty string
         self.date = ""
 
-
         self.text_widget = tk.Text
-
-        # Retrieve index of dream image displayed on the homescreen
-        # current_index = 0
-
-        # Access the data of the current dream image in the DreamImages database
-        # self.dream_image_data = DB().open_dream_data(self.current_image_index)
-
-        # self.display_current_description(self.current_image_index)
-
-        # Assuming the description is stored in the third column (index 2)
-        # self.description = self.dream_image_data[3]
 
         self.setup_ui()
 
@@ -65,7 +48,6 @@ class DescriptionScreen(tk.Frame):
 
 
         # date of dream image (Assuming the date is stored in the first column)
-
         date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
 
         # add button to go back
@@ -102,6 +84,7 @@ class DescriptionScreen(tk.Frame):
         row = cursor.fetchone()
 
         if row:
+            self.date = row[1] # Assuming the date is in the 2nd column
             self.description = row[3]  # Assuming the description is in the 4th column
         else:
             self.description = "Description not available"

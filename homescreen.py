@@ -2,7 +2,6 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import sqlite3
 from datetime import datetime
-from descriptionscreen import DescriptionScreen
 
 
 class HomeScreen(tk.Frame):
@@ -12,8 +11,6 @@ class HomeScreen(tk.Frame):
         self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.controller = controller
         self.configure(background='#1D2364')
-
-        self.description_screen = DescriptionScreen(parent, controller)  # Reference to DescriptionScreen instance
 
         self.image_list = []
         self.current_image_index = 0
@@ -41,7 +38,6 @@ class HomeScreen(tk.Frame):
     def reset_screen(self):
         self.load_images_from_database()
         self.setup_ui()
-
 
 
     def update_time_date(self):
@@ -96,9 +92,6 @@ class HomeScreen(tk.Frame):
         enlarge_button.place(relx=0.884, rely=0.19, anchor=tk.CENTER)
         self.create_buttons()
 
-    def update_current_index(self, index):
-        self.current_image_index = index
-        print("updated index: ", index)
 
     def previous_image(self):
         if self.current_image_index < len(self.image_list) - 1:
@@ -165,6 +158,16 @@ class HomeScreen(tk.Frame):
         description_screen = self.controller.get_frame("DescriptionScreen")
         description_screen.setup_ui()  # Ensure this method updates the UI based on the current index
 
+    def go_meaning(self):
+        self.controller.show_frame("MeaningScreen")
+        meaning_screen = self.controller.get_frame("MeaningScreen")
+        meaning_screen.setup_ui()  # Ensure this method updates the UI based on the current index
+ 
+    def go_characters(self):
+        self.controller.show_frame("CharacterScreen")
+        character_screen = self.controller.get_frame("CharacterScreen")
+        character_screen.setup_ui()  # Ensure this method updates the UI based on the current index
+
     def create_buttons(self):
 
         # Navigation buttons
@@ -184,10 +187,10 @@ class HomeScreen(tk.Frame):
         button1 = tk.Button(self, text="Description", pady=10, bg='#8E97FF', fg='white', command=self.go_description)
         button1.place(x=space_between_buttons, y=520, width=button_width, height=30)  # Adjust y for bottom placement
         # Button 2
-        button2 = tk.Button(self, text="Meaning", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("MeaningScreen"))
+        button2 = tk.Button(self, text="Meaning", pady=10, bg='#8E97FF', fg='white', command=self.go_meaning)
         button2.place(x=space_between_buttons * 2 + button_width, y=520, width=button_width, height=30)
         # Button 3
-        button3 = tk.Button(self, text="Characters", pady=10, bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("CharacterScreen"))
+        button3 = tk.Button(self, text="Characters", pady=10, bg='#8E97FF', fg='white', command=self.go_characters)
         button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width, height=30)
         # Button 4
         button4 = tk.Button(self, text="Story", command=lambda: self.controller.show_frame("StoryScreen"))
