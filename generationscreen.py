@@ -97,7 +97,7 @@ class GenerationScreen(tk.Frame):
         }
 
         data = {
-            "model": "text-davinci-003",
+            "model": "gpt-3.5-turbo-instruct",
             "prompt": enhanced_prompt,
             "max_tokens": 200,  # Adjust as needed
             "temperature": 0.7,  # Adjust as needed
