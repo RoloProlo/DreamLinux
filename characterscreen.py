@@ -100,31 +100,10 @@ class CharacterScreen(tk.Frame):
             self.symbol_image = symbol
 
 
-    def setup_character_view(self):
-        # Create a frame for the characters list
-        self.characters_frame = tk.Frame(self, bg="#1D2364")
-        self.characters_frame.pack(fill="both", expand=True, side="bottom")
-
-        # Scrollbar
-        self.char_scrollbar = tk.Scrollbar(self.characters_frame)
-        self.char_scrollbar.pack(side="right", fill="y")
-
-        # Listbox for characters
-        self.char_listbox = tk.Listbox(self.characters_frame, yscrollcommand=self.char_scrollbar.set, width=50, bg="#1D2364", fg="white")
-        self.char_scrollbar.config(command=self.char_listbox.yview)
-
-        self.char_listbox.pack(side="left", fill="both", expand=True)
-
-        # Initially hide the frame
-        self.characters_frame.pack_forget()
-
-        close_button = Button(self.characters_frame, text="Close", command=lambda: self.characters_frame.pack_forget(), bg='#414BB2', fg='white')
-        close_button.pack()
 
     def open_symbol(self):
         image = Image.open("images/character_symbol.jpg").resize((160, 160), Image.Resampling.LANCZOS)
         return ImageTk.PhotoImage(image)
-
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")
@@ -154,16 +133,92 @@ class CharacterScreen(tk.Frame):
             print(f"No description found for character: {name}")
 
     def see_all(self):
-        # Clear existing entries
-        self.char_listbox.delete(0, tk.END)
+        conn_characters = sqlite3.connect('Characters.db')
+        cursor_characters = conn_characters.cursor()
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
 
-        # Populate the listbox with character names
-        for name_tuple in self.character_names:
-            self.char_listbox.insert(tk.END, name_tuple[0])
+        # Clock Label
+        self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
+        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+        self.update_clock()
 
-        # Show the characters frame
-        self.characters_frame.pack(fill="both", expand=True, side="bottom")
+        def on_configure(event):
+            # Update the scroll region to encompass the entire canvas
+            self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+
+        # create canvas
+        self.canvas = tk.Canvas(self, bg="#1D2364", highlightbackground="#1D2364", borderwidth=1)
+        self.canvas.place(x=100, y=100, width=850, height=430)
+
+        scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        scrollbar.place(relx=1, rely=0, relheight=0)  # place and hide the scrollbar
+        self.canvas.config(yscrollcommand=scrollbar.set)
+
+
+        # Bind the event of resizing to update the scroll region
+        self.canvas.bind('<Configure>', on_configure)
+
+        # enable scrolling using mousepad
+        def on_mouse_wheel(event):
+            if event.delta > 0:
+                self.canvas.yview_scroll(-1, "units")
+            elif event.delta < 0:
+                self.canvas.yview_scroll(1, "units")
+
+        self.canvas.bind_all("<MouseWheel>", on_mouse_wheel)
+
+        # Fetch existing characters from the database
+        cursor_characters.execute("SELECT name FROM Characters")
+        characters = cursor_characters.fetchall()
+
+        # Extract the string value from the tuple
+        names = []
+        for name_tuple in characters:
+            names.append(name_tuple[0]) 
+
+        # Call gpt_function to load pictures and names onto the canvas
+        print("names: ", names)
+        self.character_names = names
+
+        if not self.character_names[0] == "":
+            symbol = self.open_symbol()
+            x_offset, y_offset = 30, 10  # initial x and y offset for the first picture
+            for name in self.character_names:
+                # Load picture onto the canvas
+                char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
+                # Add name text underneath the picture
+                char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", 24, "bold"), fill="white")
+
+                # Example of binding a click event to each character image
+                self.canvas.tag_bind(char_image, '<Button-1>', lambda e, name=name: self.on_character_click(name))
+                # Associate text item with image item
+                self.canvas.addtag_withtag(f'{char_image}_text', char_name)
+
+                # Store references if you need to interact with these items later
+                self.canvas_items.append((char_image, char_name))
+
+                # Update x and y_offset for the next picture
+                x_offset += 200
+                if x_offset > 750:
+                    x_offset = 30
+                    y_offset += 200
+
+            # Ensure the symbol image is retained by storing it in an attribute
+            self.symbol_image = symbol
+
+             # Define buttons 
+        back_button = Button(self, text='Back', command=self.exit_see_all, bg='#414BB2', fg='white', pady=10, borderless=1)
+        back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+
 
     def go_back(self):
-        self.controller.show_frame("HomeScreen")
+        self.controller.show_frame("CharacterScreen")
         self.conn.close()
+
+ 
+    def exit_see_all(self):
+        # Rebuild the interface as needed
+        self.setup_ui()
+      

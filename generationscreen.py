@@ -204,7 +204,7 @@ class GenerationScreen(tk.Frame):
 
             if not existing_character:
                 # Insert new character into the Characters database
-                cursor_characters.execute('''INSERT INTO Characters (name) VALUES (?)''', (character,))
+                cursor_characters.execute('''INSERT INTO Characters (name, description) VALUES (?, ?)''', (character, "No description available"))
                 conn_characters.commit()
                 print(f"New character '{character}' added to the Characters database.")
             else:

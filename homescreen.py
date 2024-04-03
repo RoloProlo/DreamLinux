@@ -48,7 +48,7 @@ class HomeScreen(tk.Frame):
     def load_images_from_database(self):
         conn = sqlite3.connect('DreamImages.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT id, date, image FROM DreamImages ORDER BY date DESC")
+        cursor.execute("SELECT id, date, image FROM DreamImages ORDER BY id DESC")
         self.image_list = cursor.fetchall()
         conn.close()
 
