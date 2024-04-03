@@ -22,7 +22,7 @@ class GenerationScreen(tk.Frame):
         self.image_label = tk.Label(self)  # Placeholder for the image
         self.text_label = tk.Label(self, font=("Helvetica", 20), bg="#1D2364", fg="white", wraplength=parent.winfo_screenwidth())  # To display the transcribed text
         self.text_label.pack(side="top", pady=20)  # Adjust positioning as needed
-        self.API_KEY = 'secret'
+        self.API_KEY = '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'
         self.global_img = None
         self.image_label = tk.Label(self)
         self.image_label.pack(fill="both", expand=True)  # Pre-pack the label to ensure it's ready
