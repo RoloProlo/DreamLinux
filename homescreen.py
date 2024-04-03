@@ -7,7 +7,7 @@ from datetime import datetime
 class HomeScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        self.date_label = tk.Label(self, font=("Helvetica", 24), bg="#1D2364", fg="white")
+        self.date_label = tk.Label(self, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white")
         self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.controller = controller
         self.configure(background='#1D2364')

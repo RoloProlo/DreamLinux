@@ -11,46 +11,46 @@ class CharacterScreen(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.configure(background='#1D2364')
-        self.clock_label = tk.Label(self, font=("Helvetica", 44, "bold"), bg="#1D2364", fg="white")
         #self.character_details = CharacterDetailScreen  # Placeholder for the character details screen
         self.current_image_index = 0
         self.date = ""
         self.character_names = ""
 
+        # date of dream image
+        self.date_label = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
+        self.date_label.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
+
         self.setup_ui()
 
     def setup_ui(self):
         # Clock Label
+        self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.clock_label.pack(pady=10, padx=10)
         self.update_clock()
 
         # date of dream image (Assuming the date is stored in the first column)
         date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
 
-        # Canvas for characters
-        self.canvas = tk.Canvas(self, bg="#1D2364", highlightthickness=0)
-        self.canvas.pack(fill="both", expand=True)
+        # Create canvas for characters
+        self.canvas = tk.Canvas(self, bg="#1D2364", highlightbackground="#1D2364", borderwidth=1, highlightthickness=0)
+        self.canvas.place(x=100, y=100, width=850, height=430)
 
         self.display_characters()
         
-        self.setup_character_view()
+        # self.setup_character_view()
 
         # Buttons
         self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
         self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
-        self.see_all_button.pack(side=tk.LEFT, padx=10, pady=10)
-        self.back_button.pack(side=tk.RIGHT, padx=10, pady=10)
        
        # SHOW ELEMENTS ON SCREEN
-        date.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
         self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+        self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
+        self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
-
-    def initialize_characters(self):
-        self.characters = DB().open_character_data()
 
     def display_characters(self):
-        self.canvas.delete("all")  # Clear existing characters
+        # self.canvas.delete("all")  # Clear existing characters
 
         current_image_index = self.controller.get_shared_data("current_image_index")
         current_id = self.controller.get_shared_data("current_id")
@@ -60,34 +60,45 @@ class CharacterScreen(tk.Frame):
         cursor.execute("SELECT * FROM DreamImages WHERE id=?", (current_id,))
         row = cursor.fetchone()
 
+         # Store references to canvas items if needed for interaction or later updates
+        self.canvas_items = []
+
         # Get the character names and date associated with this DreamImage
         self.character_names = row[5].split(', ') if row else []
         self.date = row[1] if row else []
         print("names: ", self.character_names)
 
-        symbol = self.open_symbol()
+        # Update the date label
+        self.date_label.config(text=self.date)
 
-        # Store references to canvas items if needed for interaction or later updates
-        self.canvas_items = []
+        # check if there are any characters associated with current dream
+        if not self.character_names[0] == "":
+            symbol = self.open_symbol()
 
-        x_offset, y_offset = 30, 10
-        for name in self.character_names:
-            char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
-            char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", 24, "bold"), fill="white")
+            x_offset, y_offset = 30, 10  # initial x and y offset for the first picture
+            for name in self.character_names:
+                # Load picture onto the canvas
+                char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
+                # Add name text underneath the picture
+                char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", 24, "bold"), fill="white")
 
-            # Example of binding a click event to each character image
-            self.canvas.tag_bind(char_image, '<Button-1>', lambda e, name=name: self.on_character_click(name))
+                # Example of binding a click event to each character image
+                self.canvas.tag_bind(char_image, '<Button-1>', lambda e, name=name: self.on_character_click(name))
+                # Associate text item with image item
+                self.canvas.addtag_withtag(f'{char_image}_text', char_name)
 
-            # Store references if you need to interact with these items later
-            self.canvas_items.append((char_image, char_name))
+                # Store references if you need to interact with these items later
+                self.canvas_items.append((char_image, char_name))
 
-            x_offset += 200
-            if x_offset > 750:
-                x_offset = 30
-                y_offset += 200
+                # Update x and y_offset for the next picture
+                x_offset += 200
+                if x_offset > 750:
+                    x_offset = 30
+                    y_offset += 200
 
-        # Ensure the symbol image is retained by storing it in an attribute
-        self.symbol_image = symbol
+            # Ensure the symbol image is retained by storing it in an attribute
+            self.symbol_image = symbol
+
 
     def setup_character_view(self):
         # Create a frame for the characters list

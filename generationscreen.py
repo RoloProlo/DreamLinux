@@ -168,8 +168,18 @@ class GenerationScreen(tk.Frame):
 
 
     def insert_image_into_database(self, image_path, description, meaning, characters):
-        conn = sqlite3.connect('DreamImages.db')  # Adjust with your actual database path
+        # Connect to the SQLite database for dream images
+        conn = sqlite3.connect('DreamImages.db')  
         cursor = conn.cursor()
+
+        # Connect to the SQLite database for characters
+        conn_characters = sqlite3.connect('Characters.db')
+        cursor_characters = conn_characters.cursor()
+
+        # Connect to the SQLite database for characters in dream
+        conn_dreamcast = sqlite3.connect('DreamCast.db')
+        cursor_dreamcast = conn_dreamcast.cursor()
+
 
         # Prepare data
         date_str = datetime.now().strftime('%d/%m/%Y')
@@ -180,7 +190,34 @@ class GenerationScreen(tk.Frame):
         cursor.execute(query, (date_str, image_path, description, meaning, characters))
 
         conn.commit()
+        print("New dream image added to the DreamImages database.")
+
+        # Retrieve the dream image id
+        cursor.execute("SELECT id FROM DreamImages WHERE date=?", (date_str,))
+        dream_image_id = cursor.fetchone()[0]
+
+        # Insert characters into DreamCast table
+        for character in characters:
+            # Check if the character exists in the Characters database
+            cursor_characters.execute("SELECT * FROM Characters WHERE name=?", (character,))
+            existing_character = cursor_characters.fetchone()
+
+            if not existing_character:
+                # Insert new character into the Characters database
+                cursor_characters.execute('''INSERT INTO Characters (name) VALUES (?)''', (character,))
+                conn_characters.commit()
+                print(f"New character '{character}' added to the Characters database.")
+            else:
+                print(f"Character '{character}' already present in the Characters database.")
+
+            cursor_dreamcast.execute('''INSERT INTO DreamCast (dream_image_id, character) 
+                                        VALUES (?, ?)''', (dream_image_id, character))
+            conn_dreamcast.commit()
+            print(f"Character '{character}' added to the DreamCast database for the dream image.")
+
         conn.close()
+        conn_characters.close()
+        conn_dreamcast.close()
 
 
     def save_image(self):
