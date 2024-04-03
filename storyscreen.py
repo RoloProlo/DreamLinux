@@ -209,4 +209,4 @@ class StoryScreen(tk.Frame):
 
     def go_back(self):
         self.controller.show_frame("HomeScreen")
-        self.conn.close()  # Close the database connection when leaving this screen
+        #self.conn.close()  # Close the database connection when leaving this screen

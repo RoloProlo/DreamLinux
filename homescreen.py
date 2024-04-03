@@ -2,6 +2,8 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import sqlite3
 from datetime import datetime
+from PIL import Image
+import numpy as np
 
 
 class HomeScreen(tk.Frame):
@@ -17,6 +19,7 @@ class HomeScreen(tk.Frame):
         self.current_id = 0
         self.fullscreen_overlay = None
         self.overlay_label = None
+        self.image_path = ""
 
         self.image_label = None  # Initialize image_label
 
@@ -48,7 +51,7 @@ class HomeScreen(tk.Frame):
     def load_images_from_database(self):
         conn = sqlite3.connect('DreamImages.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT id, date, image FROM DreamImages ORDER BY date DESC")
+        cursor.execute("SELECT id, date, image FROM DreamImages ORDER BY id DESC")
         self.image_list = cursor.fetchall()
         conn.close()
 
@@ -80,6 +83,10 @@ class HomeScreen(tk.Frame):
         original_image = Image.open(image_path)
         photo = ImageTk.PhotoImage(original_image)
 
+        # Pick color
+        most_prominent_color = self.get_most_prominent_color(original_image)
+        print(f"The most prominent color in the image is: {most_prominent_color}")
+
         # Create a label to display the image
         self.image_label = tk.Label(self, image=photo, background='#1D2364')
         self.image_label.image = photo  # Keep a reference!
@@ -91,6 +98,25 @@ class HomeScreen(tk.Frame):
         enlarge_button = tk.Button(self, text="⇐", command=lambda: self.enlarge_image(image_path))
         enlarge_button.place(relx=0.884, rely=0.19, anchor=tk.CENTER)
         self.create_buttons()
+
+    from PIL import Image
+    import numpy as np
+
+    def get_most_prominent_color(self, img):
+        # Load the image
+        # Convert the image into a NumPy array
+        img_np = np.array(img)
+
+        # Reshape the array into a 2D array where each row represents a color (R, G, B)
+        pixels = img_np.reshape(-1, img_np.shape[-1])
+
+        # Find the unique colors and their counts in the image
+        unique_colors, counts = np.unique(pixels, axis=0, return_counts=True)
+
+        # Identify the most frequent color
+        most_prominent_color = unique_colors[counts.argmax()]
+
+        return most_prominent_color
 
 
     def previous_image(self):
