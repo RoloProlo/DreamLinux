@@ -235,10 +235,10 @@ class CharacterScreen(tk.Frame):
         self.character_name_entry.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
         # Add a button to confirm adding the character or to go back
-        self.confirm_button = Button(self, text="Confirm", font=("Helvetica", 18), command=self.save_character, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.confirm_button = Button(self, text="Confirm", font=("Helvetica", 16), command=self.save_character, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.confirm_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
 
-        self.cancel_button = Button(self, text="Cancel", font=("Helvetica", 18), command=self.exit_add_character, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.cancel_button = Button(self, text="Cancel", font=("Helvetica", 16), command=self.exit_add_character, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
 
 

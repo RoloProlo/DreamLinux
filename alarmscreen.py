@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import simpledialog
 from tkmacosx import Button
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 import tkmacosx
 import subprocess
@@ -13,32 +13,40 @@ class AlarmScreen(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.configure(background='#1D2364')  # Set a background color
+        # Database setup
+        self.conn = sqlite3.connect('Alarms.db')
+        self.cursor = self.conn.cursor()
 
-        self.alarm_y = [0.3]
-        self.alarm_toggles = {}
+        # check for alarms
+        self.check_alarms()
 
         # UI Elements
         self.setup_ui()
 
-        # Start the check for alarms
-
-        # self.display_alarms()
 
     def check_alarms(self):
         current_time = datetime.now().strftime("%H:%M")
+
+        # Database setup
+        self.conn = sqlite3.connect('Alarms.db')
+        self.cursor = self.conn.cursor()
         self.cursor.execute("SELECT alarm_time FROM Alarms WHERE state=?", ('ON',))
         active_alarms = self.cursor.fetchall()
         for alarm_time in active_alarms:
             if alarm_time[0] == current_time:
                 print(f"Alarm triggered at {current_time}")
                 self.controller.show_frame("StoryScreen")
-        self.after(30000, self.check_alarms)  # Check alarms every 30 seconds
+
+                 # Snooze the alarm for 10 minutes
+                snooze_time = (datetime.now() + timedelta(minutes=10)).strftime("%H:%M")
+                print(snooze_time)
+                self.cursor.execute("UPDATE Alarms SET alarm_time=? WHERE alarm_time=?", (snooze_time, alarm_time[0]))
+                self.conn.commit()
+                self.setup_ui()
+
+        self.after(10000, self.check_alarms)  # Check alarms every 10 seconds
 
     def setup_ui(self):
-        # Database setup
-        self.conn = sqlite3.connect('Alarms.db')
-        self.cursor = self.conn.cursor()
-
         # Fetch existing alarms from the database
         self.cursor.execute("SELECT alarm_time, state FROM Alarms")
         self.existing_alarms = self.cursor.fetchall()
@@ -54,21 +62,18 @@ class AlarmScreen(tk.Frame):
         for alarm in self.existing_alarms:
             self.create_alarm_widgets(alarm[0], alarm[1])
 
-        back_button = tkmacosx.Button(self, text="Go Back", command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2',
-                                      fg='white', pady=5, borderless=1)
+        back_button = tkmacosx.Button(self, text="Go Back", command=lambda: self.go_back(), bg='#414BB2',
+                                      fg='white', pady=10, borderless=1)
 
         add_alarm_button = tkmacosx.Button(self, text='Add Alarm', command=self.add_alarm, bg='#8E97FF', fg='white',
-                                           pady=5, borderless=1)
+                                           pady=10, borderless=1)
         add_alarm_button.pack()
-
-        self.back_button = Button(self, text='Go Back', command=self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
 
         # SHOW ELEMENTS ON SCREEN
         self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
         add_alarm_button.place(relx=0.8, rely=0.9, anchor=tk.CENTER)
         back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
-        # self.display_alarms()
 
     def create_alarm_widgets(self, alarm_time, state):
         global alarm_toggle
@@ -119,14 +124,6 @@ class AlarmScreen(tk.Frame):
             self.conn.commit()
 
             self.exit_alarm()
-            # alarm_window.destroy()
-
-
-        # # Open new toplevel window to set alarm
-        # alarm_window = tk.Toplevel(self)
-        # alarm_window.title("Set Alarm")
-        # alarm_window.geometry("500x500")
-        # alarm_window.configure(background='#1D2364')
 
         # Clear the window
         for widget in self.winfo_children():
@@ -174,12 +171,12 @@ class AlarmScreen(tk.Frame):
         self.minute_decrement_button.config(width=50, height=50)
         self.minute_decrement_button.place(relx=0.61, rely=0.26, anchor=tk.CENTER)
 
-        self.set_button = tkmacosx.Button(self, text='Set', command=set_alarm, bg='#414BB2', fg='white', pady=5,
+        self.set_button = tkmacosx.Button(self, text='Set', command=set_alarm, bg='#414BB2', fg='white', pady=10,
                                      borderless=1)
         self.set_button.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
 
         self.delete_button = tkmacosx.Button(self, text='Delete', command=self.exit_alarm, bg='#414BB2',
-                                        fg='white', pady=5, borderless=1)
+                                        fg='white', pady=10, borderless=1)
         self.delete_button.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
 
 
@@ -213,60 +210,60 @@ class AlarmScreen(tk.Frame):
     def on_alarm_click(self, event):
         global alarm_label, alarm_window, hour_var, minute_var, hour_label, minute_label
         alarm_label = event.widget
-        alarm_window = tk.Toplevel(self)
-        alarm_window.title("Set Alarm")
-        alarm_window.geometry("500x500")
-        alarm_window.configure(background='#1D2364')
+
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
 
         # Define and show time sliders
         hour_var = tk.IntVar(value=int(alarm_label.cget("text").split(":")[0]))
         minute_var = tk.IntVar(value=int(alarm_label.cget("text").split(":")[1]))
 
-        hour_label = tk.Label(alarm_window, textvariable=hour_var, fg="white", bg="#1D2364",
+        self.hour_label = tk.Label(self, textvariable=hour_var, fg="white", bg="#1D2364",
                               font=("Helvetica", 44, "bold"))
-        hour_label.place(relx=0.4, rely=0.4, anchor=tk.CENTER)
+        self.hour_label.place(relx=0.4, rely=0.4, anchor=tk.CENTER)
         # hour_label.bind("<MouseWheel>", self.scroll)
 
-        minute_label = tk.Label(alarm_window, textvariable=minute_var, fg="white", bg="#1D2364",
+        self.minute_label = tk.Label(self, textvariable=minute_var, fg="white", bg="#1D2364",
                                 font=("Helvetica", 44, "bold"))
-        minute_label.place(relx=0.61, rely=0.4, anchor=tk.CENTER)
+        self.minute_label.place(relx=0.61, rely=0.4, anchor=tk.CENTER)
         # minute_label.bind("<MouseWheel>", self.scroll)
 
-        colon_label = tk.Label(alarm_window, text=":", bg="#1D2364", fg="white", font=("Helvetica", 44, "bold"))
-        colon_label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
+        self.colon_label = tk.Label(self, text=":", bg="#1D2364", fg="white", font=("Helvetica", 44, "bold"))
+        self.colon_label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
 
         # Create buttons
 
         # Create buttons for incrementing and decrementing hour
-        hour_increment_button = tkmacosx.Button(alarm_window, text='+', command=self.increment_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+        self.hour_increment_button = tkmacosx.Button(self, text='+', command=self.increment_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
                                                 borderless=1, font=("Helvetica", 34, "bold"))
-        hour_increment_button.config(width=50, height=50)
-        hour_increment_button.place(relx=0.4, rely=0.55, anchor=tk.CENTER)
+        self.hour_increment_button.config(width=50, height=50)
+        self.hour_increment_button.place(relx=0.4, rely=0.55, anchor=tk.CENTER)
 
-        hour_decrement_button = tkmacosx.Button(alarm_window, text='-', command=self.decrement_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+        self.hour_decrement_button = tkmacosx.Button(self, text='-', command=self.decrement_hour, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
                                                 borderless=1, font=("Helvetica", 34, "bold"))
         
-        hour_decrement_button.config(width=50, height=50)
-        hour_decrement_button.place(relx=0.4, rely=0.26, anchor=tk.CENTER)
+        self.hour_decrement_button.config(width=50, height=50)
+        self.hour_decrement_button.place(relx=0.4, rely=0.26, anchor=tk.CENTER)
 
         # Create buttons for incrementing and decrementing minute
-        minute_increment_button = tkmacosx.Button(alarm_window, text='+', command=self.increment_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+        self.minute_increment_button = tkmacosx.Button(self, text='+', command=self.increment_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
                                                 borderless=1, font=("Helvetica", 34, "bold"))
-        minute_increment_button.config(width=50, height=50)
-        minute_increment_button.place(relx=0.61, rely=0.55, anchor=tk.CENTER)
+        self.minute_increment_button.config(width=50, height=50)
+        self.minute_increment_button.place(relx=0.61, rely=0.55, anchor=tk.CENTER)
 
-        minute_decrement_button = tkmacosx.Button(alarm_window, text='-', command=self.decrement_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
+        self.minute_decrement_button = tkmacosx.Button(self, text='-', command=self.decrement_minute, bg='#1D2364', fg='white', highlightthickness=1, highlightbackground='#1D2364',
                                                 borderless=1, font=("Helvetica", 34, "bold"))
-        minute_decrement_button.config(width=50, height=50)
-        minute_decrement_button.place(relx=0.61, rely=0.26, anchor=tk.CENTER)
+        self.minute_decrement_button.config(width=50, height=50)
+        self.minute_decrement_button.place(relx=0.61, rely=0.26, anchor=tk.CENTER)
 
-        set_button = tkmacosx.Button(alarm_window, text='Set', command=self.set_alarm, bg='#414BB2', fg='white', pady=5,
+        self.set_button = tkmacosx.Button(self, text='Set', command=self.set_alarm, bg='#414BB2', fg='white', pady=10,
                                      borderless=1)
-        set_button.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
+        self.set_button.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
 
-        delete_button = tkmacosx.Button(alarm_window, text='Delete', command=lambda: self.delete_alarm(alarm_label),
-                                        bg='#414BB2', fg='white', pady=5, borderless=1)
-        delete_button.place(relx=0.3, rely=0.9, anchor=tk.CENTER)
+        self.delete_button = tkmacosx.Button(self, text='Delete', command=lambda: self.delete_alarm(alarm_label),
+                                        bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.delete_button.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
 
     def set_alarm(self):
         # retrieve the current alarm time
@@ -275,12 +272,13 @@ class AlarmScreen(tk.Frame):
         alarm_time = f"{hour_var.get():02d}:{minute_var.get():02d}"
         alarm_label.config(text=alarm_time)
         self.alarm_toggles[alarm_label] = alarm_toggle  # Store alarm toggle button associated with the alarm
-        alarm_window.destroy()
         alarm_label.bind("<Button-1>", self.on_alarm_click)
 
         # update the alarm with the new set time
         self.cursor.execute("UPDATE Alarms SET alarm_time=? WHERE alarm_time=?", (alarm_time, old_alarm))
         self.conn.commit()
+
+        self.exit_alarm()
 
 
     def delete_alarm(self, alarm_label):
@@ -297,7 +295,6 @@ class AlarmScreen(tk.Frame):
         self.alarm_toggles[alarm_label].destroy()  # Delete corresponding alarm toggle button
         alarm_label.destroy()
         del self.alarm_toggles[alarm_label]
-        alarm_window.destroy()
 
         # Shift up the remaining alarms below the deleted one
         for label, toggle in list(self.alarm_toggles.items()):
@@ -309,6 +306,8 @@ class AlarmScreen(tk.Frame):
 
         # Remove the last entry from alarm_y list
         self.alarm_y.pop()
+
+        self.exit_alarm()
 
     def toggle_alarm(self, alarm_label):
         global alarm_toggles
@@ -337,6 +336,7 @@ class AlarmScreen(tk.Frame):
         self.set_button.destroy()
         self.delete_button.destroy()
         # Rebuild the interface as needed
+        # self.controller.show_frame("AlarmScreen")
         self.setup_ui()
 
     def go_back(self):

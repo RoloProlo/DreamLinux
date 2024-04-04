@@ -99,9 +99,6 @@ class HomeScreen(tk.Frame):
         enlarge_button.place(relx=0.884, rely=0.19, anchor=tk.CENTER)
         self.create_buttons()
 
-    from PIL import Image
-    import numpy as np
-
     def get_most_prominent_color(self, img):
         # Load the image
         # Convert the image into a NumPy array
