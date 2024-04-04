@@ -15,6 +15,7 @@ class CharacterScreen(tk.Frame):
         self.current_image_index = 0
         self.date = ""
         self.character_names = ""
+        self.character_name_entry = None
 
         # date of dream image
         self.date_label = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
@@ -37,8 +38,6 @@ class CharacterScreen(tk.Frame):
 
         self.display_characters()
         
-        # self.setup_character_view()
-
         # Buttons
         self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
         self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
@@ -208,15 +207,68 @@ class CharacterScreen(tk.Frame):
             # Ensure the symbol image is retained by storing it in an attribute
             self.symbol_image = symbol
 
-             # Define buttons 
+        # Define buttons 
+        self.add_button = Button(self, text="Add character", command=self.add_character, pady=10, bg='#8E97FF', fg='white', borderless=1)
         back_button = Button(self, text='Back', command=self.exit_see_all, bg='#414BB2', fg='white', pady=10, borderless=1)
+        
+        self.add_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
         back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+
+    def add_character(self):
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
+
+        # Clock Label
+        self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
+        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+        self.update_clock()
+
+        # Add label for "Add new character" text
+        self.add_character_label = tk.Label(self, text="Add new character", font=("Helvetica", 24, "bold"), bg='#1D2364', fg='white')
+        self.add_character_label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
+
+
+        ## ADD CODE FOR SPEECH PROMPT HERE
+        # Add entry field for entering the new character's name
+        self.character_name_entry = tk.Entry(self, font=("Helvetica", 18))
+        self.character_name_entry.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        
+        # Add a button to confirm adding the character or to go back
+        self.confirm_button = Button(self, text="Confirm", font=("Helvetica", 18), command=self.save_character, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.confirm_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
+
+        self.cancel_button = Button(self, text="Cancel", font=("Helvetica", 18), command=self.exit_add_character, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
 
 
     def go_back(self):
         self.controller.show_frame("CharacterScreen")
         self.conn.close()
 
+    def save_character(self):
+        conn_characters = sqlite3.connect('Characters.db')
+        cursor_characters = conn_characters.cursor()
+        # Retrieve the entered character name from the entry widget
+        self.character = self.character_name_entry.get()
+        # Perform any additional actions with the character name as needed
+        print("Entered character:", self.character)
+
+        # Insert new character into the Characters database
+        cursor_characters.execute('''INSERT INTO Characters (name, description) VALUES (?, ?)''', (self.character, "No description available"))
+        conn_characters.commit()
+
+        # close interface
+        self.exit_add_character()
+
+    def exit_add_character(self):
+        if self.add_character_label: 
+            self.add_character_label.destroy()
+            self.character_name_entry.destroy()
+            self.confirm_button.destroy()
+            self.cancel_button.destroy()
+        # Rebuild the interface as needed
+        self.see_all()
  
     def exit_see_all(self):
         # Rebuild the interface as needed

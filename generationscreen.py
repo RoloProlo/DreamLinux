@@ -78,8 +78,7 @@ class GenerationScreen(tk.Frame):
                 self.global_img = Image.open(image_bytes)
 
                 self.save_image()
-                # self.update_image_fullscreen()  # Call updated method to display the image fullscreen
-                # self.save_image()
+
             except KeyError as e:
                 messagebox.showerror("Error", f"Failed to parse image data. {e}")
         else:
@@ -123,8 +122,9 @@ class GenerationScreen(tk.Frame):
         if not prompt:
             messagebox.showinfo("Input Required", "Please enter a dream description.")
             return
-        enhanced_prompt = f"consider this story: {prompt}. Give me a list of all the characters, with no subdivision. \
-                    Every single character should be mentioned separately on its own line. Only include characters that are explicitely mentioned."
+        enhanced_prompt = f"consider this story: {prompt}. Give me a list of all the characters, with no subdivision.\
+                Every single character should be mentioned separately on its own line. Only include characters that are explicitely mentioned.\
+                The narrator, or the 'I' in the story should be listed as Me"
         headers = {
             "Authorization": f"Bearer {self.API_KEY}"
         }
@@ -144,7 +144,6 @@ class GenerationScreen(tk.Frame):
             # Assuming the response['data'] contains text
             try:
                 characters = response.json()['choices'][0]['text'].strip()
-                # self.characters = characters  # Store the characters for future use
                 # Split the text into lines and extract characters
                 characters_list = [line.split(". ")[1] for line in characters.split("\n") if line.strip()]
                 print("list: ", characters_list)
@@ -152,7 +151,6 @@ class GenerationScreen(tk.Frame):
                 characters_string = ', '.join(characters_list)
                 self.characters = characters_string  # Store the characters list for future use
                 print(characters_string)
-                # print(characters)
             except KeyError as e:
                 messagebox.showerror("Error", f"Failed to parse character data. {e}")
         else:
@@ -176,7 +174,6 @@ class GenerationScreen(tk.Frame):
         # Prepare data
         date_str = datetime.now().strftime('%d/%m/%Y')
         # Assuming the description variable contains the image description
-        # Leave 'meaning' and 'characters' as empty strings or NULL if not applicable
         query = '''INSERT INTO DreamImages (date, image, description, meaning, characters)
                    VALUES (?, ?, ?, ?, ?)'''
         cursor.execute(query, (date_str, image_path, description, meaning, characters))
