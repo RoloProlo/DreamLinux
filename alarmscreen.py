@@ -18,7 +18,7 @@ class AlarmScreen(tk.Frame):
         self.cursor = self.conn.cursor()
 
         # check for alarms
-        self.check_alarms()
+        # self.check_alarms()
 
         # UI Elements
         self.setup_ui()

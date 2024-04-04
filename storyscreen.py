@@ -2,7 +2,7 @@ import tkinter as tk
 from gtts import gTTS
 from tkmacosx import Button
 import pygame
-# import pyaudio
+import pyaudio
 import sounddevice as sd
 import speech_recognition as sr
 from io import BytesIO
