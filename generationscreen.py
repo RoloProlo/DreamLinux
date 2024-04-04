@@ -9,6 +9,7 @@ from datetime import datetime
 from tkmacosx import Button
 import sqlite3
 from openai import OpenAI
+import re
 
 
 class GenerationScreen(tk.Frame):
@@ -24,12 +25,14 @@ class GenerationScreen(tk.Frame):
         self.image_label = tk.Label(self)  # Placeholder for the image
         self.text_label = tk.Label(self, font=("Helvetica", 20), bg="#1D2364", fg="white", wraplength=parent.winfo_screenwidth())  # To display the transcribed text
         self.text_label.pack(side="top", pady=20)  # Adjust positioning as needed
-        self.API_KEY = ''
+        self.API_KEY = 'secret'
         self.global_img = None
         self.image_label = tk.Label(self)
         self.image_label.pack(fill="both", expand=True)  # Pre-pack the label to ensure it's ready
         self.conn = sqlite3.connect('DreamImages.db')
         self.cursor = self.conn.cursor()
+
+        self.prompted_generation = ""
 
         self.back_button = Button(self, text='Go Back', command=self.go_back, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
@@ -41,11 +44,77 @@ class GenerationScreen(tk.Frame):
         self.description = description
         self.generate_meaning(self.description)
         self.generate_characters(self.description)
-        self.generate_and_display_image(self.description)
+
+        character_screen = self.controller.get_frame("CharacterScreen")
+        character_screen.generation_characters(self.characters)
+        self.controller.show_frame("CharacterScreen")
+
+
+        #self.generate_and_display_image(self.description)
+
+    def start_img(self):
+        self.replace_names_with_descriptions()
+        print(self.prompted_generation)
+        self.generate_and_display_image(self.prompted_generation)
+        return
+
+
+    def replace_names_with_descriptions(self):
+        # Connect to the database
+        conn = sqlite3.connect('Characters.db')
+        cursor = conn.cursor()
+        dream_description = self.description
+
+        # Fetch all character names and descriptions
+        cursor.execute("SELECT name, description FROM Characters")
+        characters = cursor.fetchall()
+
+        def replace_function(match):
+            # This function will be used to replace each match with the appropriate text
+            name = match.group(0)  # The original text matched (preserving case)
+            # Find the character tuple by case-insensitive name match
+            character = next((c for c in characters if c[0].lower() == name.lower()), None)
+            if character:
+                _, description = character
+                if description and description.strip() != "No description available":
+                    return f"{name} ({description})"
+            return name  # Return the name as is if no description is available or if not found
+
+        # Compile a regular expression pattern that matches any of the character names
+        # Use re.IGNORECASE for case-insensitive matching
+        names_pattern = re.compile('|'.join(re.escape(name) for name, _ in characters), re.IGNORECASE)
+
+        # Use the sub method to replace all occurrences found by the pattern
+        # The replace_function determines the replacement text for each match
+        self.prompted_generation = names_pattern.sub(replace_function, dream_description)
+
+        conn.close()
+
+    # def replace_names_with_descriptions(self):
+    #     # Connect to the database
+    #     conn = sqlite3.connect('Characters.db')
+    #     cursor = conn.cursor()
+    #     dream_description = self.description
+    #
+    #     # Fetch all character names and descriptions
+    #     cursor.execute("SELECT name, description FROM Characters")
+    #     characters = cursor.fetchall()
+    #
+    #     # Replace each name in the dream description with its description
+    #     for name, description in characters:
+    #         if name in dream_description:
+    #             if description and description.strip() != "No description available":
+    #                 replacement_text = f"{name} ({description})"
+    #             else:
+    #                 replacement_text = name  # If no valid description, just use the name without appending anything.
+    #             dream_description = dream_description.replace(name, replacement_text)
+    #
+    #     conn.close()
+    #     self.prompted_generation = dream_description
 
     def generate_and_display_image(self, prompt):
         if not prompt:
-            messagebox.showinfo("Input Required", "Please enter a dream description.")
+            messagebox.showinfo("I was walking when the old wise owl stopped me and said this is not Amsterdam You Fool, Run!")
             return
 
         fantasy_descriptors = ["enchanted", "mystical", "dreamy", "magical"]
@@ -144,13 +213,23 @@ class GenerationScreen(tk.Frame):
             # Assuming the response['data'] contains text
             try:
                 characters = response.json()['choices'][0]['text'].strip()
-                # Split the text into lines and extract characters
-                characters_list = [line.split(". ")[1] for line in characters.split("\n") if line.strip()]
-                print("list: ", characters_list)
+                characters_list = []
+                for line in characters.split("\n"):
+                    if line.strip():
+                        # Check if line contains ". " and split accordingly, else just use the line as is
+                        split_line = line.split(". ") if ". " in line else [line]
+                        characters_list.append(split_line[-1])  # Append the last element which should be the character's name
                 # Join characters with comma and save as a string
                 characters_string = ', '.join(characters_list)
-                self.characters = characters_string  # Store the characters list for future use
-                print(characters_string)
+                print("test" + characters_string)
+                self.characters = characters_string  # Store the characters list fo
+                # Split the text into lines and extract characters
+                # characters_list = [line.split(". ")[1] for line in characters.split("\n") if line.strip()]
+                # print("list: ", characters_list)
+                # # Join characters with comma and save as a string
+                # characters_string = ', '.join(characters_list)
+                # self.characters = characters_string  # Store the characters list for future use
+                # print(characters_string)
             except KeyError as e:
                 messagebox.showerror("Error", f"Failed to parse character data. {e}")
         else:

@@ -60,6 +60,26 @@ class StoryScreen(tk.Frame):
         # self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
         # self.canvas.place(x=100, y=100, width=850, height=430)
 
+    def confirm_recording(self):
+        print("Confirmed transcription.")
+        description = self.description
+        self.again_button.place_forget()
+        self.confirm_button.place_forget()
+
+        generation_screen = self.controller.get_frame("GenerationScreen")
+        generation_screen.start_gen(description)
+
+        # character_screen = self.controller.get_frame("CharacterScreen")
+        # character_screen.start_gen(typed_description)
+        # self.controller.show_frame("GenerationScreen")
+        #self.controller.show_frame("GenerationScreen")
+
+    # def generation_characters(self):
+    #     generation_screen = self.controller.get_frame("GenerationScreen")
+    #     generation_screen.start_gen(typed_description)
+    #     self.controller.show_frame("GenerationScreen")
+    #     return
+
     def skip_dev(self):
         # Get the description from the Entry widget
         typed_description = self.text_input.get().strip()
@@ -71,7 +91,6 @@ class StoryScreen(tk.Frame):
         # Pass the typed description to the GenerationScreen
         generation_screen = self.controller.get_frame("GenerationScreen")
         generation_screen.start_gen(typed_description)
-        self.controller.show_frame("GenerationScreen")
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")
@@ -194,15 +213,6 @@ class StoryScreen(tk.Frame):
     def give_description(self):
         return self.description
 
-    def confirm_recording(self):
-        print("Confirmed transcription.")
-        description = self.description
-        self.again_button.place_forget()
-        self.confirm_button.place_forget()
-
-        generation_screen = self.controller.get_frame("GenerationScreen")
-        generation_screen.start_gen(description)
-        self.controller.show_frame("GenerationScreen")
 
 
 

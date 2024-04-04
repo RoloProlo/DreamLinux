@@ -83,9 +83,9 @@ class HomeScreen(tk.Frame):
         original_image = Image.open(image_path)
         photo = ImageTk.PhotoImage(original_image)
 
-        # Pick color
-        most_prominent_color = self.get_most_prominent_color(original_image)
-        print(f"The most prominent color in the image is: {most_prominent_color}")
+        # # Pick color
+        # most_prominent_color = self.get_most_prominent_color(original_image)
+        # print(f"The most prominent color in the image is: {most_prominent_color}")
 
         # Create a label to display the image
         self.image_label = tk.Label(self, image=photo, background='#1D2364')

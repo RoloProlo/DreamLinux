@@ -13,6 +13,7 @@ class CharacterDetailScreen(tk.Frame):
         self.controller = controller
         self.character_name = character_name
         self.character_description = character_description  # Make sure to include this in the arguments
+        self.text_entry= ""
 
         self.setup_ui()
 
@@ -37,6 +38,7 @@ class CharacterDetailScreen(tk.Frame):
         points = (x1+r, y1, x1+r, y1, x2-r, y1, x2-r, y1, x2, y1, x2, y1+r, x2, y1+r, x2, y2-r, x2, y2-r, x2, y2, x2-r, y2, x2-r, y2, x1+r, y2, x1+r, y2, x1, y2, x1, y2-r, x1, y2-r, x1, y1+r, x1, y1+r, x1, y1)
         self.canvas_inner.create_polygon(points, fill="#414BB2", smooth=True)
 
+
         # add character symbol
         symbol = self.open_symbol()
         char_symbol = tk.Label(image=symbol, borderwidth=0)
@@ -49,6 +51,9 @@ class CharacterDetailScreen(tk.Frame):
         self.description_text = self.canvas_inner.create_text(80, 50, text=self.character_description,
                                 font=("Helvetica", 18), fill="white", width=400, anchor="nw")
 
+        self.canvas_inner.tag_bind(self.description_text, '<Button-1>', self.enable_editing)
+
+
         # Create buttons for adjusting text size
         text_size = tk.Label(self, text="Text size", font=("Helvetica", 24, "bold"), bg='#1D2364', fg='white')
         self.increase_button = Button(self, text="+", font=("Helvetica", 34, "bold"), command=self.increase_text_size,bg='#1D2364', fg='white', borderless=1, highlightthickness=1, highlightbackground='#1D2364')
@@ -59,6 +64,8 @@ class CharacterDetailScreen(tk.Frame):
         # add edit and back buttons
         self.edit_button = Button(self, text='Edit', command=self.edit, bg='#414BB2', fg='white', highlightbackground="#8E97FF", pady=10, borderless=0)
         self.back_button = Button(self, text='Back', command=self.hide_screen, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.save_button = Button(self, text='Save', command=self.save_edit, bg='#414BB2', fg='white', pady=10, borderless=1)
+
 
         # SHOW ELEMENTS ON SCREEN
         self.canvas_outer.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -85,6 +92,42 @@ class CharacterDetailScreen(tk.Frame):
 
         self.pack(fill="both", expand=True)
 
+    def enable_editing(self, event=None):
+        # Get the current description text
+        current_text = self.canvas_inner.itemcget(self.description_text, 'text')
+
+        # Create an Entry widget at the same place as the text
+        self.text_entry = tk.Entry(self, font=("Helvetica", 18), bg='white', fg='black', width=50)
+        self.text_entry.insert(0, current_text)  # Prefill with current text
+        self.text_entry.bind('<Return>', self.save_edit)  # Bind the Enter key to save the edit
+
+        # Place the Entry widget on the canvas
+        self.text_entry_window = self.canvas_inner.create_window(80, 50, anchor="nw", window=self.text_entry)
+        self.text_entry.focus_set()  # Set focus to the entry widget
+
+        self.edit_button.place_forget()
+        self.save_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+
+
+
+
+
+    def save_edit(self, event=None):
+        # Get the edited text from the Entry widget
+        edited_text = self.text_entry.get()
+        self.character_description = edited_text  # Update the character description
+
+        # Remove the Entry widget and show the updated text
+        self.canvas_inner.delete(self.text_entry_window)  # Remove the Entry widget from the canvas
+        self.canvas_inner.itemconfigure(self.description_text, text=self.character_description)  # Update the text element with new description
+
+        # Optionally, update the database with the new description here
+        # Similar to the existing code in the edit method
+
+        self.save_button.place_forget()
+        self.edit_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+
+        self.edit()  # Call the existing method to update the database (or modify as needed)
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")

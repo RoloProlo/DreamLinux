@@ -16,12 +16,14 @@ class CharacterScreen(tk.Frame):
         self.date = ""
         self.character_names = ""
         self.character_name_entry = None
+        self.is_generation = False
 
         # date of dream image
         self.date_label = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
         self.date_label.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
 
-        self.setup_ui()
+        if not self.is_generation:
+            self.setup_ui()
 
     def setup_ui(self):
         # Clock Label
@@ -36,16 +38,87 @@ class CharacterScreen(tk.Frame):
         self.canvas = tk.Canvas(self, bg="#1D2364", highlightbackground="#1D2364", borderwidth=1, highlightthickness=0)
         self.canvas.place(x=100, y=100, width=850, height=430)
 
-        self.display_characters()
-        
+
         # Buttons
-        self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
-        self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
-       
-       # SHOW ELEMENTS ON SCREEN
+        if not self.is_generation:
+            self.display_characters()
+            self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
+            self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
+            self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
+            self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+        else:
+            self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#414BB2', fg='white', pady=10, borderless=1)
+
+            self.generate_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+            self.see_all_button.place_forget()
+            self.back_button.place_forget()
+
+
+
+
         self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
-        self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
-        self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+
+    def on_generate_button_press(self):
+        # Perform the navigation
+        self.controller.show_frame("GenerationScreen")
+
+        # Call the start_img method on the GenerationScreen instance
+        generation_screen = self.controller.get_frame("GenerationScreen")
+        if hasattr(generation_screen, 'start_img'):  # Check if the method exists to avoid errors
+            generation_screen.start_img()
+
+        # Set is_generation to False
+        self.is_generation = False
+
+    def generation_characters(self, characters):
+        conn_characters = sqlite3.connect('Characters.db')
+        cursor_characters = conn_characters.cursor()
+        self.is_generation = True
+        self.setup_ui()
+
+
+        characters_list = characters.split(", ")
+        symbol = self.open_symbol()
+
+        x_offset, y_offset = 30, 10
+        for character in characters_list:
+            # Load picture onto the canvas
+            char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
+            # Add name text underneath the picture
+            char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=character, font=("Helvetica", 24, "bold"), fill="white")
+
+            # Example of binding a click event to each character image
+            self.canvas.tag_bind(char_image, '<Button-1>', lambda e, character=character: self.on_character_click(character))
+            # Associate text item with image item
+            self.canvas.addtag_withtag(f'{char_image}_text', char_name)
+
+            # Store references if you need to interact with these items later
+            self.canvas_items.append((char_image, char_name))
+
+            # Update x and y_offset for the next picture
+            x_offset += 200
+            if x_offset > 750:
+                x_offset = 30
+                y_offset += 200
+
+            cursor_characters.execute("SELECT * FROM Characters WHERE name=?", (character,))
+            existing_character = cursor_characters.fetchone()
+
+            if not existing_character:
+                # Insert new character into the Characters database
+                cursor_characters.execute('''INSERT INTO Characters (name, description) VALUES (?, ?)''', (character, "No description available"))
+                conn_characters.commit()
+                print(f"New character '{character}' added to the Characters database.")
+            else:
+                print(f"Character '{character}' already present in the Characters database.")
+
+        self.symbol_image = symbol
+
+
+        # generation_screen = self.controller.get_frame("GenerationScreen")
+        # generation_screen.start_gen(typed_description)
+        # self.controller.show_frame("GenerationScreen")
+
 
 
     def display_characters(self):
@@ -127,6 +200,7 @@ class CharacterScreen(tk.Frame):
                 self.character_details.hide_screen()  # Hide existing detail screen if it exists
 
             self.character_details = CharacterDetailScreen(self, self.controller, name, description)
+            self.character_details.setup_ui()
             self.character_details.show_screen()
         else:
             print(f"No description found for character: {name}")
