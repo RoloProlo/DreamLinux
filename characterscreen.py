@@ -47,14 +47,13 @@ class CharacterScreen(tk.Frame):
             self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
             self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
         else:
-            self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#414BB2', fg='white', pady=10, borderless=1)
+            self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#8E97FF', fg='white', pady=10, borderless=1)
+            self.cancel_button = Button(self, text='Cancel\nimage generation', command=self.on_cancel_button_press, bg='#414BB2', fg='white', pady=4, borderless=1)
 
-            self.generate_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+            self.generate_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
+            self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
             self.see_all_button.place_forget()
             self.back_button.place_forget()
-
-
-
 
         self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
 
@@ -66,6 +65,16 @@ class CharacterScreen(tk.Frame):
         generation_screen = self.controller.get_frame("GenerationScreen")
         if hasattr(generation_screen, 'start_img'):  # Check if the method exists to avoid errors
             generation_screen.start_img()
+
+        # Set is_generation to False
+        self.is_generation = False
+
+    def on_cancel_button_press(self):
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
+        # Perform the navigation
+        self.controller.show_frame("HomeScreen")
 
         # Set is_generation to False
         self.is_generation = False
@@ -82,10 +91,14 @@ class CharacterScreen(tk.Frame):
 
         x_offset, y_offset = 30, 10
         for character in characters_list:
+            # Calculate font size based on name length
+            font_size = 24 - ((len(character) - 4) // 2)
+            if font_size < 12:  # Ensure minimum font size
+                font_size = 12
             # Load picture onto the canvas
             char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
             # Add name text underneath the picture
-            char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=character, font=("Helvetica", 24, "bold"), fill="white")
+            char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=character, font=("Helvetica", font_size, "bold"), fill="white")
 
             # Example of binding a click event to each character image
             self.canvas.tag_bind(char_image, '<Button-1>', lambda e, character=character: self.on_character_click(character))
@@ -149,10 +162,14 @@ class CharacterScreen(tk.Frame):
 
             x_offset, y_offset = 30, 10  # initial x and y offset for the first picture
             for name in self.character_names:
+                # Calculate font size based on name length
+                font_size = 24 - ((len(name) - 4) // 2)
+                if font_size < 12:  # Ensure minimum font size
+                    font_size = 12
                 # Load picture onto the canvas
                 char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
                 # Add name text underneath the picture
-                char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", 24, "bold"), fill="white")
+                char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", font_size, "bold"), fill="white")
 
                 # Example of binding a click event to each character image
                 self.canvas.tag_bind(char_image, '<Button-1>', lambda e, name=name: self.on_character_click(name))
@@ -259,10 +276,14 @@ class CharacterScreen(tk.Frame):
             symbol = self.open_symbol()
             x_offset, y_offset = 30, 10  # initial x and y offset for the first picture
             for name in self.character_names:
+                # Calculate font size based on name length
+                font_size = 24 - ((len(name) - 4) // 2)
+                if font_size < 12:  # Ensure minimum font size
+                    font_size = 12
                 # Load picture onto the canvas
                 char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
                 # Add name text underneath the picture
-                char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", 24, "bold"), fill="white")
+                char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", font_size, "bold"), fill="white")
 
                 # Example of binding a click event to each character image
                 self.canvas.tag_bind(char_image, '<Button-1>', lambda e, name=name: self.on_character_click(name))
@@ -309,7 +330,7 @@ class CharacterScreen(tk.Frame):
         self.character_name_entry.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
         # Add a button to confirm adding the character or to go back
-        self.confirm_button = Button(self, text="Confirm", font=("Helvetica", 16), command=self.save_character, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.confirm_button = Button(self, text="Confirm", font=("Helvetica", 16), command=self.save_character, bg='#8E97FF', fg='white', pady=10, borderless=1)
         self.confirm_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
 
         self.cancel_button = Button(self, text="Cancel", font=("Helvetica", 16), command=self.exit_add_character, bg='#414BB2', fg='white', pady=10, borderless=1)

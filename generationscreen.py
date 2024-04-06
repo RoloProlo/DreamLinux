@@ -19,7 +19,7 @@ class GenerationScreen(tk.Frame):
         self.configure(background='#1D2364')
         self.canvas = tk.Canvas(self, bg="#1D2364", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
-        self.description = ""
+        self.description = "I had to help my friend from the past with the washing machine. but the washing machine was flying around and breaking down. I was stressed because I had a lot of appointments during the day and I needed to go. But it was raining and stormy, and I needed to pee so I went to a coffeeplace, but there kept being a woman in front of me."
         self.meaning = ""
         self.characters = ""
         self.image_label = tk.Label(self)  # Placeholder for the image
@@ -37,7 +37,7 @@ class GenerationScreen(tk.Frame):
         self.back_button = Button(self, text='Go Back', command=self.go_back, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
-        # self.start_gen(self.description)
+        self.start_gen(self.description)
 
 
     def start_gen(self, description):
@@ -50,7 +50,7 @@ class GenerationScreen(tk.Frame):
         self.controller.show_frame("CharacterScreen")
 
 
-        #self.generate_and_display_image(self.description)
+        # self.generate_and_display_image(self.description)
 
     def start_img(self):
         self.replace_names_with_descriptions()
@@ -192,7 +192,7 @@ class GenerationScreen(tk.Frame):
             messagebox.showinfo("Input Required", "Please enter a dream description.")
             return
         enhanced_prompt = f"consider this story: {prompt}. Give me a list of all the characters, with no subdivision.\
-                Every single character should be mentioned separately on its own line. Only include characters that are explicitely mentioned.\
+                Every single character should be mentioned separately on its own line. Only include characters that are explicitely mentioned, and only include humans (so no objects).\
                 The narrator, or the 'I' in the story should be listed as Me"
         headers = {
             "Authorization": f"Bearer {self.API_KEY}"

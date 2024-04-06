@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 from datetime import datetime
 import sqlite3
 from tkmacosx import Button
+import textwrap
 
 
 class CharacterDetailScreen(tk.Frame):
@@ -38,14 +39,19 @@ class CharacterDetailScreen(tk.Frame):
         points = (x1+r, y1, x1+r, y1, x2-r, y1, x2-r, y1, x2, y1, x2, y1+r, x2, y1+r, x2, y2-r, x2, y2-r, x2, y2, x2-r, y2, x2-r, y2, x1+r, y2, x1+r, y2, x1, y2, x1, y2-r, x1, y2-r, x1, y1+r, x1, y1+r, x1, y1)
         self.canvas_inner.create_polygon(points, fill="#414BB2", smooth=True)
 
-
         # add character symbol
         symbol = self.open_symbol()
         char_symbol = tk.Label(image=symbol, borderwidth=0)
         char_symbol.image = symbol  # Keep a reference to the image to prevent it from being garbage collected
 
+        # Check if character name needs wrapping
+        if len(self.character_name) > 18:
+            wrapped_name = textwrap.fill(self.character_name, width=18)
+        else:
+            wrapped_name = self.character_name
+
         # add text character information
-        self.name_label = tk.Label(self, text=self.character_name, font=("Helvetica", 24, "bold"), fg="white", bg="#8E97FF")
+        self.name_label = tk.Label(self, text=wrapped_name, font=("Helvetica", 24, "bold"), fg="white", bg="#8E97FF")
         self.description_title_label = tk.Label(self, text="Description", font=("Helvetica", 24, "bold"), fg="white", bg="#8E97FF")
         # Add text inside the inner rectangle
         self.description_text = self.canvas_inner.create_text(80, 50, text=self.character_description,
@@ -63,6 +69,7 @@ class CharacterDetailScreen(tk.Frame):
 
         # add edit and back buttons
         self.edit_button = Button(self, text='Edit', command=self.edit, bg='#414BB2', fg='white', highlightbackground="#8E97FF", pady=10, borderless=0)
+        self.delete_button = Button(self, text='Delete', command=self.delete_character, bg='#414BB2', fg='white', highlightbackground="#8E97FF", pady=10, borderless=0)
         self.back_button = Button(self, text='Back', command=self.hide_screen, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.save_button = Button(self, text='Save', command=self.save_edit, bg='#414BB2', fg='white', pady=10, borderless=1)
 
@@ -78,7 +85,8 @@ class CharacterDetailScreen(tk.Frame):
         self.increase_button.place(relx=0.93, rely=0.4, anchor=tk.CENTER)  
         self.decrease_button.place(relx=0.93, rely=0.5, anchor=tk.CENTER)
 
-        self.edit_button.place(relx=0.25, rely=0.8, anchor=tk.CENTER)
+        self.edit_button.place(relx=0.3, rely=0.8, anchor=tk.CENTER)
+        self.delete_button.place(relx=0.2, rely=0.8, anchor=tk.CENTER)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
     def show_screen(self, character_name=None, character_description=None):
@@ -107,7 +115,6 @@ class CharacterDetailScreen(tk.Frame):
 
         self.edit_button.place_forget()
         self.save_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
-
 
 
 
@@ -166,4 +173,13 @@ class CharacterDetailScreen(tk.Frame):
         cursor_characters.execute("UPDATE Characters SET description=? WHERE name=?", (self.character_description, self.character_name))
         conn_characters.commit()
 
+    def delete_character(self):
+        # update the database
+        conn_characters = sqlite3.connect('Characters.db')
+        cursor_characters = conn_characters.cursor()
+        cursor_characters.execute("DELETE FROM Characters WHERE name=?", (self.character_name,))
+        conn_characters.commit()
+
+        self.hide_screen()
+  
 

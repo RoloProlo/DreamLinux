@@ -18,7 +18,7 @@ class AlarmScreen(tk.Frame):
         self.cursor = self.conn.cursor()
 
         # check for alarms
-        # self.check_alarms()
+        self.check_alarms()
 
         # UI Elements
         self.setup_ui()
@@ -48,6 +48,8 @@ class AlarmScreen(tk.Frame):
 
     def setup_ui(self):
         # Fetch existing alarms from the database
+        self.conn = sqlite3.connect('Alarms.db')
+        self.cursor = self.conn.cursor()
         self.cursor.execute("SELECT alarm_time, state FROM Alarms")
         self.existing_alarms = self.cursor.fetchall()
 
@@ -275,6 +277,8 @@ class AlarmScreen(tk.Frame):
         alarm_label.bind("<Button-1>", self.on_alarm_click)
 
         # update the alarm with the new set time
+        self.conn = sqlite3.connect('Alarms.db')
+        self.cursor = self.conn.cursor()
         self.cursor.execute("UPDATE Alarms SET alarm_time=? WHERE alarm_time=?", (alarm_time, old_alarm))
         self.conn.commit()
 
