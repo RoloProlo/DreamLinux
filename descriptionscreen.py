@@ -8,7 +8,7 @@ import sqlite3
 class DescriptionScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        self.clock_label = tk.Label(self, font=("Helvetica", 44, "bold"), bg="#1D2364", fg="white")
+        self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.text_widget_height = 350  # Adjust this value as needed
         self.controller = controller
         self.configure(background='#1D2364')
@@ -51,7 +51,8 @@ class DescriptionScreen(tk.Frame):
         date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
 
         # add button to go back
-        back_button = tk.Button(self, text="Go Back", command=lambda: self.go_back())
+        back_button = Button(self, text="Back to image", command=lambda: self.go_back(), bg='#414BB2', fg='white', pady=10, borderless=1)
+        
 
         # Create buttons for adjusting text size
         text_size = tk.Label(self, text="Text size", font=("Helvetica", 24, "bold"), bg='#1D2364', fg='white')

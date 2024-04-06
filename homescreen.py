@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime
 from PIL import Image
 import numpy as np
+from tkmacosx import Button
 
 
 class HomeScreen(tk.Frame):
@@ -30,13 +31,22 @@ class HomeScreen(tk.Frame):
     def setup_ui(self):
         # Display the current time
         self.time_label.pack()
-
         # Display the date of the current image
         self.date_label.pack()
 
         self.update_time_date()
         self.display_current_image()
-        self.create_buttons()
+
+        # # Display the current time and date
+        # self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
+        # self.date_label = tk.Label(self, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white")
+        # # Update the date label to show the date of the current image
+        # self.date_label.config(text=self.current_date)
+
+        # self.time_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+        # self.time_label.config(bg="#1D2364")
+        # self.date_label.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
+        # self.date_label.config(bg="#1D2364")
 
     def reset_screen(self):
         self.load_images_from_database()
@@ -45,7 +55,7 @@ class HomeScreen(tk.Frame):
 
     def update_time_date(self):
         now = datetime.now()
-        self.time_label.config(text=now.strftime("%H:%M:%S"))
+        self.time_label.config(text=now.strftime("%H:%M"))
         self.time_label.after(1000, self.update_time_date)
 
     def load_images_from_database(self):
@@ -74,7 +84,7 @@ class HomeScreen(tk.Frame):
 
         # Get the current image and date
         # Assuming you only need date and image_path, and id is not used directly here.
-        _, current_date, image_path = self.image_list[self.current_image_index]
+        _, self.current_date, image_path = self.image_list[self.current_image_index]
         self.controller.set_shared_data("current_image_index", self.current_image_index)
         self.controller.set_shared_data("current_id", self.current_id)
 
@@ -93,10 +103,13 @@ class HomeScreen(tk.Frame):
         self.image_label.pack(side="top", fill="both", expand=True)
 
         # Update the date label to show the date of the current image
-        self.date_label.config(text=current_date)
+        self.date_label.config(text=self.current_date)
 
-        enlarge_button = tk.Button(self, text="⇐", command=lambda: self.enlarge_image(image_path))
-        enlarge_button.place(relx=0.884, rely=0.19, anchor=tk.CENTER)
+        # display enlarge button
+        enlarge_button = Button(self, text="⇐", bg="#414BB2", fg="white", command=lambda: self.enlarge_image(image_path), highlightbackground="#414BB2", borderless=0)
+        enlarge_button.config(width=40, height=35)
+        enlarge_button.place(relx=0.98, rely=0.17, anchor=tk.CENTER)
+
         self.create_buttons()
 
     def get_most_prominent_color(self, img):
@@ -194,33 +207,35 @@ class HomeScreen(tk.Frame):
     def create_buttons(self):
 
         # Navigation buttons
-        next_button = tk.Button(self, text=">>", command=self.next_image)
-        prev_button = tk.Button(self, text="<<", command=self.previous_image)
+        next_button = Button(self, text=">>", bg='#414BB2', fg='white', command=self.next_image, highlightbackground="#414BB2", borderless=0)
+        next_button.config(width=40, height=35)
+        prev_button = Button(self, text="<<", bg='#414BB2', fg='white', command=self.previous_image, highlightbackground="#414BB2", borderless=0)
+        prev_button.config(width=40, height=35)
 
         # Place navigation buttons
-        next_button.place(relx=0.95, rely=0.5, anchor=tk.CENTER)
-        prev_button.place(relx=0.05, rely=0.5, anchor=tk.CENTER)
+        next_button.place(relx=0.95, rely=0.55, anchor=tk.CENTER)
+        prev_button.place(relx=0.05, rely=0.55, anchor=tk.CENTER)
 
         # Calculate button width and the spacing between them
         button_width = 100  # Fixed width for each button
         parent_width = 1024  # Assuming the parent frame's width is the whole window width
         space_between_buttons = (parent_width - (5 * button_width)) / 6  # Equally space out buttons
 
+
         # Button 1
-        button1 = tk.Button(self, text="Description", pady=10, bg='#8E97FF', fg='white', command=self.go_description)
-        button1.place(x=space_between_buttons, y=520, width=button_width, height=30)  # Adjust y for bottom placement
+        button1 = Button(self, text="Description", bg='#8E97FF', fg='white', command=self.go_description, highlightbackground="#8E97FF", pady=10, borderless=0)
+        button1.place(x=space_between_buttons, y=520, width=button_width)  # Adjust y for bottom placement
         # Button 2
-        button2 = tk.Button(self, text="Meaning", pady=10, bg='#8E97FF', fg='white', command=self.go_meaning)
-        button2.place(x=space_between_buttons * 2 + button_width, y=520, width=button_width, height=30)
+        button2 = Button(self, text="Meaning", bg='#8E97FF', fg='white', command=self.go_meaning, highlightbackground="#8E97FF", pady=10, borderless=0)
+        button2.place(x=space_between_buttons * 2 + button_width, y=520, width=button_width)
         # Button 3
-        button3 = tk.Button(self, text="Characters", pady=10, bg='#8E97FF', fg='white', command=self.go_characters)
-        button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width, height=30)
+        button3 = Button(self, text="Characters", bg='#8E97FF', fg='white', command=self.go_characters, highlightbackground="#8E97FF", pady=10, borderless=0)
+        button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width)
         # Button 4
-        button4 = tk.Button(self, text="Story", command=lambda: self.controller.show_frame("StoryScreen"))
-        button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width, height=30)  # Adjust y for bottom placement
+        button4 = Button(self, text="Story", bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("StoryScreen"), highlightbackground="#8E97FF", pady=10, borderless=0)
+        button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width)  # Adjust y for bottom placement
         # # Button 5
-        button5 = tk.Button(self, text="Alarm", bg='#414BB2', fg='white', command=lambda: self.controller.show_frame("AlarmScreen"))
-        button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width,
-                      height=30)  # Adjust y for bottom placement
+        button5 = Button(self, text="Alarm", bg='#414BB2', fg='white', command=lambda: self.controller.show_frame("AlarmScreen"), highlightbackground="#414BB2", pady=10, borderless=0)
+        button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width)  # Adjust y for bottom placement
 
 

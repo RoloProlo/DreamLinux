@@ -64,7 +64,7 @@ class AlarmScreen(tk.Frame):
         for alarm in self.existing_alarms:
             self.create_alarm_widgets(alarm[0], alarm[1])
 
-        back_button = tkmacosx.Button(self, text="Go Back", command=lambda: self.go_back(), bg='#414BB2',
+        back_button = tkmacosx.Button(self, text="Back to image", command=lambda: self.go_back(), bg='#414BB2',
                                       fg='white', pady=10, borderless=1)
 
         add_alarm_button = tkmacosx.Button(self, text='Add Alarm', command=self.add_alarm, bg='#8E97FF', fg='white',
