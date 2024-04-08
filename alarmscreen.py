@@ -32,21 +32,54 @@ class AlarmScreen(tk.Frame):
         self.cursor = self.conn.cursor()
         self.cursor.execute("SELECT alarm_time FROM Alarms WHERE state=?", ('ON',))
         active_alarms = self.cursor.fetchall()
-        for alarm_time in active_alarms:
-            if alarm_time[0] == current_time:
+        for self.alarm_time in active_alarms:
+            if self.alarm_time[0] == current_time:
+                self.alarm_ring()
                 print(f"Alarm triggered at {current_time}")
-                self.controller.show_frame("StoryScreen")
-
-                 # Snooze the alarm for 10 minutes
-                snooze_time = (datetime.now() + timedelta(minutes=10)).strftime("%H:%M")
-                print(snooze_time)
-                self.cursor.execute("UPDATE Alarms SET alarm_time=? WHERE alarm_time=?", (snooze_time, alarm_time[0]))
-                self.conn.commit()
-                self.setup_ui()
+                break
 
         self.after(10000, self.check_alarms)  # Check alarms every 10 seconds
 
+    def alarm_ring(self):
+        # INSERT CODE FOR ALARM SOUND
+
+        self.controller.show_frame("AlarmScreen")
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
+
+        # Clock Label
+        self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
+        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+        self.update_clock()
+
+        # Define buttons 
+        self.snooze_button = Button(self, text="Snooze", font=("Helvetica", 28, "bold"), command=self.snooze_click, bg='#414BB2', fg='white', borderless=1)
+        self.snooze_button.config(width=220, height=220)
+        self.story_button = Button(self, text='Story time', font=("Helvetica", 28, "bold"), command=self.story_time, bg='#414BB2', fg='white', borderless=1)
+        self.story_button.config(width=220, height=220)
+        
+        self.snooze_button.place(relx=0.3, rely=0.5, anchor=tk.CENTER)
+        self.story_button.place(relx=0.7, rely=0.5, anchor=tk.CENTER)
+
+
+    def snooze_click(self):
+        # Snooze the alarm for 10 minutes
+        snooze_time = (datetime.now() + timedelta(minutes=10)).strftime("%H:%M")
+        print("Snooze until: ", snooze_time)
+        self.cursor.execute("UPDATE Alarms SET alarm_time=? WHERE alarm_time=?", (snooze_time, self.alarm_time[0]))
+        self.conn.commit()
+        self.setup_ui()
+        self.controller.show_frame("HomeScreen")
+
+    def story_time(self):
+        self.setup_ui()
+        self.controller.show_frame("StoryScreen")
+
     def setup_ui(self):
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
         # Fetch existing alarms from the database
         self.conn = sqlite3.connect('Alarms.db')
         self.cursor = self.conn.cursor()

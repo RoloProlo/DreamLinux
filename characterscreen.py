@@ -17,6 +17,7 @@ class CharacterScreen(tk.Frame):
         self.character_names = ""
         self.character_name_entry = None
         self.is_generation = False
+
         # print("first boolean")
 
         # date of dream image
@@ -30,6 +31,9 @@ class CharacterScreen(tk.Frame):
             self.setup_ui()
 
     def setup_ui(self):
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
         # Clock Label
         self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
         self.clock_label.pack(pady=10, padx=10)
@@ -49,9 +53,10 @@ class CharacterScreen(tk.Frame):
             print("third boolean")
 
             self.display_characters()
-            self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
+
+            self.add_button = Button(self, text="Add character", command=self.add_character, pady=10, bg='#8E97FF', fg='white', borderless=1)
             self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
-            self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
+            self.add_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
             self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
 
@@ -80,7 +85,7 @@ class CharacterScreen(tk.Frame):
         self.cancel_button = Button(self, text='Cancel\nimage generation', command=self.on_cancel_button_press, bg='#414BB2', fg='white', pady=4, borderless=1)
         self.generate_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
         self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
-        self.see_all_button.place_forget()
+        self.add_button.place_forget()
         self.back_button.place_forget()
 
     def forget_buttons(self):
@@ -266,6 +271,9 @@ class CharacterScreen(tk.Frame):
         else:
             print(f"No description found for character: {name}")
 
+
+    # FUNCTION NOT IN USE
+
     def see_all(self):
         conn_characters = sqlite3.connect('Characters.db')
         cursor_characters = conn_characters.cursor()
@@ -407,7 +415,7 @@ class CharacterScreen(tk.Frame):
             self.confirm_button.destroy()
             self.cancel_button.destroy()
         # Rebuild the interface as needed
-        self.see_all()
+        self.setup_ui()
  
     def exit_see_all(self):
         # Rebuild the interface as needed

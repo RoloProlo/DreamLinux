@@ -109,26 +109,10 @@ class HomeScreen(tk.Frame):
 
         # display enlarge button
         enlarge_button = Button(self, text="⇐", bg="#414BB2", fg="white", command=lambda: self.enlarge_image(image_path), highlightbackground="#414BB2", borderless=0)
-        enlarge_button.config(width=40, height=35)
-        enlarge_button.place(relx=0.98, rely=0.17, anchor=tk.CENTER)
+        enlarge_button.config(width=50, height=50)
+        enlarge_button.place(relx=0.976, rely=0.184, anchor=tk.CENTER)
 
         self.create_buttons()
-
-    def get_most_prominent_color(self, img):
-        # Load the image
-        # Convert the image into a NumPy array
-        img_np = np.array(img)
-
-        # Reshape the array into a 2D array where each row represents a color (R, G, B)
-        pixels = img_np.reshape(-1, img_np.shape[-1])
-
-        # Find the unique colors and their counts in the image
-        unique_colors, counts = np.unique(pixels, axis=0, return_counts=True)
-
-        # Identify the most frequent color
-        most_prominent_color = unique_colors[counts.argmax()]
-
-        return most_prominent_color
 
 
     def previous_image(self):
@@ -212,9 +196,9 @@ class HomeScreen(tk.Frame):
 
         # Navigation buttons
         next_button = Button(self, text=">>", bg='#414BB2', fg='white', command=self.next_image, highlightbackground="#414BB2", borderless=0)
-        next_button.config(width=40, height=35)
+        next_button.config(width=50, height=50)
         prev_button = Button(self, text="<<", bg='#414BB2', fg='white', command=self.previous_image, highlightbackground="#414BB2", borderless=0)
-        prev_button.config(width=40, height=35)
+        prev_button.config(width=50, height=50)
 
         # Place navigation buttons
         next_button.place(relx=0.95, rely=0.55, anchor=tk.CENTER)
