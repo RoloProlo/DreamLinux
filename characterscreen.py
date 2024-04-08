@@ -48,7 +48,6 @@ class CharacterScreen(tk.Frame):
         self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
 
 
-
         if not self.is_generation:
             print("third boolean")
 
@@ -59,25 +58,6 @@ class CharacterScreen(tk.Frame):
             self.add_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
             self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
-
-
-
-        # Buttons
-        # if not self.is_generation:
-        #     self.display_characters()
-        #     self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
-        #     self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
-        #     self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
-        #     self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
-        # else:
-        #     return
-            # self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#8E97FF', fg='white', pady=10, borderless=1)
-            # self.cancel_button = Button(self, text='Cancel\nimage generation', command=self.on_cancel_button_press, bg='#414BB2', fg='white', pady=4, borderless=1)
-            #
-            # self.generate_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
-            # self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
-            # self.see_all_button.place_forget()
-            # self.back_button.place_forget()
 
 
     def set_buttons(self):
@@ -272,95 +252,6 @@ class CharacterScreen(tk.Frame):
             print(f"No description found for character: {name}")
 
 
-    # FUNCTION NOT IN USE
-
-    def see_all(self):
-        conn_characters = sqlite3.connect('Characters.db')
-        cursor_characters = conn_characters.cursor()
-        # Clear the window
-        for widget in self.winfo_children():
-            widget.place_forget()
-
-        # Clock Label
-        self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
-        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
-        self.update_clock()
-
-        def on_configure(event):
-            # Update the scroll region to encompass the entire canvas
-            self.canvas.configure(scrollregion=self.canvas.bbox('all'))
-
-        # create canvas
-        self.canvas = tk.Canvas(self, bg="#1D2364", highlightbackground="#1D2364", borderwidth=1)
-        self.canvas.place(x=100, y=100, width=850, height=430)
-
-        scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        scrollbar.place(relx=1, rely=0, relheight=0)  # place and hide the scrollbar
-        self.canvas.config(yscrollcommand=scrollbar.set)
-
-
-        # Bind the event of resizing to update the scroll region
-        self.canvas.bind('<Configure>', on_configure)
-
-        # enable scrolling using mousepad
-        def on_mouse_wheel(event):
-            if event.delta > 0:
-                self.canvas.yview_scroll(-1, "units")
-            elif event.delta < 0:
-                self.canvas.yview_scroll(1, "units")
-
-        self.canvas.bind_all("<MouseWheel>", on_mouse_wheel)
-
-        # Fetch existing characters from the database
-        cursor_characters.execute("SELECT name FROM Characters")
-        characters = cursor_characters.fetchall()
-
-        # Extract the string value from the tuple
-        names = []
-        for name_tuple in characters:
-            names.append(name_tuple[0]) 
-
-        # Call gpt_function to load pictures and names onto the canvas
-        print("names: ", names)
-        self.character_names = names
-
-        if not self.character_names[0] == "":
-            symbol = self.open_symbol()
-            x_offset, y_offset = 30, 10  # initial x and y offset for the first picture
-            for name in self.character_names:
-                # Calculate font size based on name length
-                font_size = 24 - ((len(name) - 4) // 2)
-                if font_size < 12:  # Ensure minimum font size
-                    font_size = 12
-                # Load picture onto the canvas
-                char_image = self.canvas.create_image(x_offset, y_offset, anchor=tk.NW, image=symbol)
-                # Add name text underneath the picture
-                char_name = self.canvas.create_text(x_offset + 80, y_offset + 170, text=name, font=("Helvetica", font_size, "bold"), fill="white")
-
-                # Example of binding a click event to each character image
-                self.canvas.tag_bind(char_image, '<Button-1>', lambda e, name=name: self.on_character_click(name))
-                # Associate text item with image item
-                self.canvas.addtag_withtag(f'{char_image}_text', char_name)
-
-                # Store references if you need to interact with these items later
-                self.canvas_items.append((char_image, char_name))
-
-                # Update x and y_offset for the next picture
-                x_offset += 200
-                if x_offset > 750:
-                    x_offset = 30
-                    y_offset += 200
-
-            # Ensure the symbol image is retained by storing it in an attribute
-            self.symbol_image = symbol
-
-        # Define buttons 
-        self.add_button = Button(self, text="Add character", command=self.add_character, pady=10, bg='#8E97FF', fg='white', borderless=1)
-        back_button = Button(self, text='Back', command=self.exit_see_all, bg='#414BB2', fg='white', pady=10, borderless=1)
-        
-        self.add_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
-        back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
-
     def add_character(self):
         # Clear the window
         for widget in self.winfo_children():
@@ -417,7 +308,4 @@ class CharacterScreen(tk.Frame):
         # Rebuild the interface as needed
         self.setup_ui()
  
-    def exit_see_all(self):
-        # Rebuild the interface as needed
-        self.setup_ui()
-      
+ 
