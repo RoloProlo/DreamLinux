@@ -15,7 +15,8 @@ import sqlite3
 import threading
 import soundfile as sf  # For saving the recording
 import threading
-import speech_recognition as sr
+import tkinter.font
+
 
 class StoryScreen(tk.Frame):
     def __init__(self, parent, controller):
@@ -184,9 +185,63 @@ class StoryScreen(tk.Frame):
         # Transcribe the recording
         self.transcribe_audio('output.wav')
 
+    def reset_screen(self):
+        # Reset the description and stop_recording flag
+        self.description = ""
+        self.stop_recording = False
+
+        # Remove the stop button if it exists
+        try:
+            self.stop_button.place_forget()
+        except AttributeError:
+            pass  # If stop_button hasn't been created yet, do nothing
+
+        # Hide confirmation and again buttons if they are visible
+        self.again_button.place_forget()
+        self.confirm_button.place_forget()
+
+        # Clear the text input field
+        self.text_input.delete(0, tk.END)
+
+        # Reset the speech bubble to empty or to the initial prompt
+        bubble, text_widget, triangle = self.create_speech_bubble(40, 50, 250, 160, 50, 20, "")
+        self.canvas.itemconfig(text_widget, text="")
+
+        # Place the start, skip, and back buttons back if they were removed
+        self.start_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
+        self.skip_button.place(relx=0.3, rely=0.95, anchor=tk.CENTER)
+        self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+
+        # Any other UI components that need to be reset can be added here
+
     def update_speech_bubble(self, text, side):
+        bubble_width = 450  # The width of the speech bubble
+        bubble_height = 360  # The height of the speech bubble
+        padding = 20
+        max_font_size = 26
+        min_font_size = 10
+        padding = 20  # Padding inside the speech bubble
+
+        # Initially, set the font size to the maximum
+        font_size = max_font_size
+        font_family = "Helvetica"
+
+        # Measure text with the current font size to see if it fits
+        font = tk.font.Font(family=font_family, size=font_size)
+        text_width = font.measure(text)
+        text_height = font.metrics("linespace")
+        while font_size > min_font_size and (text_width > bubble_width - padding or text_height * len(text.split('\n')) > bubble_height - padding):
+            font_size -= 1
+            font.configure(size=font_size)
+            text_width = font.measure(text)
+            text_height = font.metrics("linespace")
+
         if side == 1:
-            bubble, text_widget, triangle = self.create_speech_bubble(500, 100, 450, 360, 50, 20, text)
+            # Clear previous text
+            self.canvas.delete("speech_text")
+
+            # Assuming speech bubble and triangle are already drawn
+            text_widget = self.canvas.create_text(500 + bubble_width / 2, 100 + bubble_height / 2, text=text, fill='black', font=(font_family, font_size), width=bubble_width - padding, anchor='center', tags="speech_text")
         else:
             bubble, text_widget, triangle = self.create_speech_bubble(40, 50, 250, 160, 50, 20, "Goodmorning, what did you dream about last night?")
 

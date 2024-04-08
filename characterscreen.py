@@ -72,6 +72,8 @@ class CharacterScreen(tk.Frame):
         self.generate_button.place_forget()
         self.cancel_button.place_forget()
 
+
+
     def on_generate_button_press(self):
         # Perform the navigation
         self.controller.show_frame("GenerationScreen")

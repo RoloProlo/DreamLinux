@@ -17,6 +17,8 @@ class AlarmScreen(tk.Frame):
         self.conn = sqlite3.connect('Alarms.db')
         self.cursor = self.conn.cursor()
 
+        self.ready = False
+
         # check for alarms
         self.check_alarms()
 
@@ -33,7 +35,7 @@ class AlarmScreen(tk.Frame):
         self.cursor.execute("SELECT alarm_time FROM Alarms WHERE state=?", ('ON',))
         active_alarms = self.cursor.fetchall()
         for self.alarm_time in active_alarms:
-            if self.alarm_time[0] == current_time:
+            if self.alarm_time[0] == current_time and not self.ready:
                 self.alarm_ring()
                 print(f"Alarm triggered at {current_time}")
                 break
@@ -41,8 +43,9 @@ class AlarmScreen(tk.Frame):
         self.after(10000, self.check_alarms)  # Check alarms every 10 seconds
 
     def alarm_ring(self):
+        # if self.ready:
+        #     return
         # INSERT CODE FOR ALARM SOUND
-
         self.controller.show_frame("AlarmScreen")
         # Clear the window
         for widget in self.winfo_children():
@@ -73,8 +76,13 @@ class AlarmScreen(tk.Frame):
         self.controller.show_frame("HomeScreen")
 
     def story_time(self):
-        self.setup_ui()
         self.controller.show_frame("StoryScreen")
+        story_screen = self.controller.get_frame("StoryScreen")
+        story_screen.reset_screen()
+        self.ready = True
+
+        self.setup_ui()
+        # self.controller.show_frame("StoryScreen")
 
     def setup_ui(self):
         # Clear the window

@@ -192,6 +192,14 @@ class HomeScreen(tk.Frame):
         character_screen.forget_buttons()
         character_screen.setup_ui()  # Ensure this method updates the UI based on the current index
 
+
+    def go_alarm(self):
+        self.controller.show_frame("AlarmScreen")
+        alarm_screen = self.controller.get_frame("AlarmScreen")
+        alarm_screen.ready = False
+
+
+
     def create_buttons(self):
 
         # Navigation buttons
@@ -223,7 +231,7 @@ class HomeScreen(tk.Frame):
         button4 = Button(self, text="Story", bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("StoryScreen"), highlightbackground="#8E97FF", pady=10, borderless=0)
         button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width)  # Adjust y for bottom placement
         # # Button 5
-        button5 = Button(self, text="Alarm", bg='#414BB2', fg='white', command=lambda: self.controller.show_frame("AlarmScreen"), highlightbackground="#414BB2", pady=10, borderless=0)
+        button5 = Button(self, text="Alarm", bg='#414BB2', fg='white', command=self.go_alarm, highlightbackground="#414BB2", pady=10, borderless=0)
         button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width)  # Adjust y for bottom placement
 
 
