@@ -47,6 +47,7 @@ class GenerationScreen(tk.Frame):
 
         character_screen = self.controller.get_frame("CharacterScreen")
         character_screen.generation_characters(self.characters)
+        character_screen.set_buttons()
         self.controller.show_frame("CharacterScreen")
 
 
@@ -128,8 +129,8 @@ class GenerationScreen(tk.Frame):
             "model": "dall-e-3",
             "prompt": enhanced_prompt,
             "n": 1,  # Number of images to generate
-            "size": "1024x1024",  # Image size
-            "quality": "hd"
+            "size": "1792x1024",  # Image size
+            "quality": "standard"
         }
 
         # Make the API call to DALL-E

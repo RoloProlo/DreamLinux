@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 import sqlite3
 from datetime import datetime
 from PIL import Image
@@ -91,7 +91,9 @@ class HomeScreen(tk.Frame):
 
         # Update the image
         original_image = Image.open(image_path)
-        photo = ImageTk.PhotoImage(original_image)
+        target_size = (1024, 600)
+        resized_image = ImageOps.contain(original_image, target_size)
+        photo = ImageTk.PhotoImage(resized_image)
 
         # # Pick color
         # most_prominent_color = self.get_most_prominent_color(original_image)
@@ -202,6 +204,8 @@ class HomeScreen(tk.Frame):
     def go_characters(self):
         self.controller.show_frame("CharacterScreen")
         character_screen = self.controller.get_frame("CharacterScreen")
+        character_screen.is_generation = False
+        character_screen.forget_buttons()
         character_screen.setup_ui()  # Ensure this method updates the UI based on the current index
 
     def create_buttons(self):

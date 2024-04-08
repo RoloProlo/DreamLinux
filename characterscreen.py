@@ -17,12 +17,16 @@ class CharacterScreen(tk.Frame):
         self.character_names = ""
         self.character_name_entry = None
         self.is_generation = False
+        # print("first boolean")
 
         # date of dream image
         self.date_label = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
         self.date_label.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
+        # self.setup_ui()
 
         if not self.is_generation:
+            # print("second boolean")
+
             self.setup_ui()
 
     def setup_ui(self):
@@ -37,25 +41,51 @@ class CharacterScreen(tk.Frame):
         # Create canvas for characters
         self.canvas = tk.Canvas(self, bg="#1D2364", highlightbackground="#1D2364", borderwidth=1, highlightthickness=0)
         self.canvas.place(x=100, y=100, width=850, height=430)
+        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
 
 
-        # Buttons
+
         if not self.is_generation:
+            print("third boolean")
+
             self.display_characters()
             self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
             self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
             self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
             self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
-        else:
-            self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#8E97FF', fg='white', pady=10, borderless=1)
-            self.cancel_button = Button(self, text='Cancel\nimage generation', command=self.on_cancel_button_press, bg='#414BB2', fg='white', pady=4, borderless=1)
 
-            self.generate_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
-            self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
-            self.see_all_button.place_forget()
-            self.back_button.place_forget()
 
-        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+
+
+        # Buttons
+        # if not self.is_generation:
+        #     self.display_characters()
+        #     self.see_all_button = Button(self, text="See all characters", command=self.see_all, pady=10, bg='#8E97FF', fg='white', borderless=1)
+        #     self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
+        #     self.see_all_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
+        #     self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+        # else:
+        #     return
+            # self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#8E97FF', fg='white', pady=10, borderless=1)
+            # self.cancel_button = Button(self, text='Cancel\nimage generation', command=self.on_cancel_button_press, bg='#414BB2', fg='white', pady=4, borderless=1)
+            #
+            # self.generate_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
+            # self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
+            # self.see_all_button.place_forget()
+            # self.back_button.place_forget()
+
+
+    def set_buttons(self):
+        self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#8E97FF', fg='white', pady=10, borderless=1)
+        self.cancel_button = Button(self, text='Cancel\nimage generation', command=self.on_cancel_button_press, bg='#414BB2', fg='white', pady=4, borderless=1)
+        self.generate_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
+        self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
+        self.see_all_button.place_forget()
+        self.back_button.place_forget()
+
+    def forget_buttons(self):
+        self.generate_button.place_forget()
+        self.cancel_button.place_forget()
 
     def on_generate_button_press(self):
         # Perform the navigation
@@ -67,23 +97,28 @@ class CharacterScreen(tk.Frame):
             generation_screen.start_img()
 
         # Set is_generation to False
-        self.is_generation = False
+        # self.is_generation = False
 
-    def on_cancel_button_press(self):
-        # Clear the window
-        for widget in self.winfo_children():
-            widget.place_forget()
-        # Perform the navigation
-        self.controller.show_frame("HomeScreen")
 
-        # Set is_generation to False
-        self.is_generation = False
 
     def generation_characters(self, characters):
         conn_characters = sqlite3.connect('Characters.db')
         cursor_characters = conn_characters.cursor()
         self.is_generation = True
-        self.setup_ui()
+        print("fourth boolean")
+
+        self.clock_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
+        self.clock_label.pack(pady=10, padx=10)
+        self.update_clock()
+
+        # date of dream image (Assuming the date is stored in the first column)
+        date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
+
+        # Create canvas for characters
+        self.canvas = tk.Canvas(self, bg="#1D2364", highlightbackground="#1D2364", borderwidth=1, highlightthickness=0)
+        self.canvas.place(x=100, y=100, width=850, height=430)
+        self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
+        self.set_buttons()
 
 
         characters_list = characters.split(", ")
@@ -132,6 +167,15 @@ class CharacterScreen(tk.Frame):
         # generation_screen.start_gen(typed_description)
         # self.controller.show_frame("GenerationScreen")
 
+
+    def on_cancel_button_press(self):
+        # Clear the window
+        for widget in self.winfo_children():
+            widget.place_forget()
+        # Perform the navigation
+        self.controller.show_frame("HomeScreen")
+
+        # Set is_generation to False
 
 
     def display_characters(self):

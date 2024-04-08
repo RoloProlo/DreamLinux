@@ -171,7 +171,7 @@ class StoryScreen(tk.Frame):
 
     def record_audio(self, samplerate=44100, channels=2):
         print("Recording...")
-        bubble, text_widget, triangle = self.create_speech_bubble(700, 200, 250, 160, 50, 20, "")
+        bubble, text_widget, triangle = self.create_speech_bubble(500, 100, 450, 360, 50, 20, "")
         duration = 30  # Maximum duration in seconds, adjust as needed
         self.stop_recording = False
         recording = sd.rec(int(duration * samplerate), samplerate=samplerate, channels=channels, dtype='float64')
@@ -186,7 +186,7 @@ class StoryScreen(tk.Frame):
 
     def update_speech_bubble(self, text, side):
         if side == 1:
-            bubble, text_widget, triangle = self.create_speech_bubble(700, 200, 250, 160, 50, 20, text)
+            bubble, text_widget, triangle = self.create_speech_bubble(500, 100, 450, 360, 50, 20, text)
         else:
             bubble, text_widget, triangle = self.create_speech_bubble(40, 50, 250, 160, 50, 20, "Goodmorning, what did you dream about last night?")
 
