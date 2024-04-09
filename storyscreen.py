@@ -41,14 +41,14 @@ class StoryScreen(tk.Frame):
         self.start_button = Button(self, text='Start Speech', command=self.start_conversation, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.start_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
 
-        self.skip_button = Button(self, text='Skip', command=lambda: self.skip_dev(), bg='#414BB2', fg='white', pady=10, borderless=1)
-        self.skip_button.place(relx=0.3, rely=0.95, anchor=tk.CENTER)
+        # self.skip_button = Button(self, text='Skip', command=lambda: self.skip_dev(), bg='#414BB2', fg='white', pady=10, borderless=1)
+        # self.skip_button.place(relx=0.3, rely=0.95, anchor=tk.CENTER)
 
         self.back_button = Button(self, text='Go Back', command=self.go_back, bg='#414BB2', fg='white', pady=10, borderless=1)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
-        self.text_input = tk.Entry(self, font=("Helvetica", 20), width=30)
-        self.text_input.place(relx=0.3, rely=0.75, anchor=tk.CENTER)
+        # self.text_input = tk.Entry(self, font=("Helvetica", 20), width=30)
+        # self.text_input.place(relx=0.3, rely=0.75, anchor=tk.CENTER)
 
         self.update_clock()
 
@@ -81,17 +81,17 @@ class StoryScreen(tk.Frame):
     #     self.controller.show_frame("GenerationScreen")
     #     return
 
-    def skip_dev(self):
-        # Get the description from the Entry widget
-        typed_description = self.text_input.get().strip()
-
-        # Check if the description is empty and use a default value or the typed value
-        if not typed_description:
-            typed_description = "Default prompt if the user didn't type anything."
-
-        # Pass the typed description to the GenerationScreen
-        generation_screen = self.controller.get_frame("GenerationScreen")
-        generation_screen.start_gen(typed_description)
+    # def skip_dev(self):
+    #     # Get the description from the Entry widget
+    #     typed_description = self.text_input.get().strip()
+    #
+    #     # Check if the description is empty and use a default value or the typed value
+    #     if not typed_description:
+    #         typed_description = "Default prompt if the user didn't type anything."
+    #
+    #     # Pass the typed description to the GenerationScreen
+    #     generation_screen = self.controller.get_frame("GenerationScreen")
+    #     generation_screen.start_gen(typed_description)
 
     def update_clock(self):
         current_time = datetime.now().strftime("%H:%M")
@@ -201,7 +201,7 @@ class StoryScreen(tk.Frame):
         self.confirm_button.place_forget()
 
         # Clear the text input field
-        self.text_input.delete(0, tk.END)
+        # self.text_input.delete(0, tk.END)
 
         # Reset the speech bubble to empty or to the initial prompt
         bubble, text_widget, triangle = self.create_speech_bubble(40, 50, 250, 160, 50, 20, "")
@@ -209,7 +209,7 @@ class StoryScreen(tk.Frame):
 
         # Place the start, skip, and back buttons back if they were removed
         self.start_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
-        self.skip_button.place(relx=0.3, rely=0.95, anchor=tk.CENTER)
+        # self.skip_button.place(relx=0.3, rely=0.95, anchor=tk.CENTER)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
         # Any other UI components that need to be reset can be added here

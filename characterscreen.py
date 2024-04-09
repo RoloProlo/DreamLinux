@@ -76,12 +76,15 @@ class CharacterScreen(tk.Frame):
 
     def on_generate_button_press(self):
         # Perform the navigation
-        self.controller.show_frame("GenerationScreen")
+        # self.controller.show_frame("GenerationScreen")
 
         # Call the start_img method on the GenerationScreen instance
         generation_screen = self.controller.get_frame("GenerationScreen")
         if hasattr(generation_screen, 'start_img'):  # Check if the method exists to avoid errors
             generation_screen.start_img()
+            # self.controller.show_frame("HomeScreen")
+            # home_screen = self.controller.get_frame("HomeScreen")
+            # home_screen.enlarge_image()
 
         # Set is_generation to False
         # self.is_generation = False

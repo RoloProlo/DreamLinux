@@ -84,13 +84,13 @@ class HomeScreen(tk.Frame):
 
         # Get the current image and date
         # Assuming you only need date and image_path, and id is not used directly here.
-        _, self.current_date, image_path = self.image_list[self.current_image_index]
+        _, self.current_date, self.image_path = self.image_list[self.current_image_index]
         self.controller.set_shared_data("current_image_index", self.current_image_index)
         self.controller.set_shared_data("current_id", self.current_id)
 
 
         # Update the image
-        original_image = Image.open(image_path)
+        original_image = Image.open(self.image_path)
         target_size = (1024, 600)
         resized_image = ImageOps.contain(original_image, target_size)
         photo = ImageTk.PhotoImage(resized_image)
@@ -108,7 +108,7 @@ class HomeScreen(tk.Frame):
         self.date_label.config(text=self.current_date)
 
         # display enlarge button
-        enlarge_button = Button(self, text="⇐", bg="#414BB2", fg="white", command=lambda: self.enlarge_image(image_path), highlightbackground="#414BB2", borderless=0)
+        enlarge_button = Button(self, text="⇐", bg="#414BB2", fg="white", command=lambda: self.enlarge_image(), highlightbackground="#414BB2", borderless=0)
         enlarge_button.config(width=50, height=50)
         enlarge_button.place(relx=0.976, rely=0.184, anchor=tk.CENTER)
 
@@ -129,13 +129,13 @@ class HomeScreen(tk.Frame):
             self.display_current_image()
             print(self.current_image_index)
 
-    def enlarge_image(self, image_path):
+    def enlarge_image(self):
         # Clear the window
         for widget in self.winfo_children():
             widget.place_forget()
 
         # Open the image
-        image = Image.open(image_path)
+        image = Image.open(self.image_path)
         width, height = image.size
 
         # Set the new width to the window width and scale height to maintain aspect ratio

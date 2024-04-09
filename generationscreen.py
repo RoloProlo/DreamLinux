@@ -148,6 +148,7 @@ class GenerationScreen(tk.Frame):
                 self.global_img = Image.open(image_bytes)
 
                 self.save_image()
+                self.go_back()
 
             except KeyError as e:
                 messagebox.showerror("Error", f"Failed to parse image data. {e}")
@@ -324,6 +325,7 @@ class GenerationScreen(tk.Frame):
         home_screen = self.controller.get_frame("HomeScreen")
         if home_screen:
             home_screen.refresh_images()
+            home_screen.enlarge_image()
         self.controller.show_frame("HomeScreen")
         self.conn.close()  # Close the database connection when leaving this screen
 

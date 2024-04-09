@@ -3,6 +3,8 @@ from tkinter import simpledialog
 from tkmacosx import Button
 from datetime import datetime, timedelta
 import sqlite3
+import pygame
+import pyaudio
 import tkmacosx
 import subprocess
 from storyscreen import StoryScreen
@@ -46,6 +48,7 @@ class AlarmScreen(tk.Frame):
         # if self.ready:
         #     return
         # INSERT CODE FOR ALARM SOUND
+        self.play_alarm_sound()
         self.controller.show_frame("AlarmScreen")
         # Clear the window
         for widget in self.winfo_children():
@@ -68,14 +71,38 @@ class AlarmScreen(tk.Frame):
 
     def snooze_click(self):
         # Snooze the alarm for 10 minutes
+        self.stop_alarm_sound()
+
         snooze_time = (datetime.now() + timedelta(minutes=10)).strftime("%H:%M")
         print("Snooze until: ", snooze_time)
         self.cursor.execute("UPDATE Alarms SET alarm_time=? WHERE alarm_time=?", (snooze_time, self.alarm_time[0]))
         self.conn.commit()
         self.setup_ui()
+        self.ready = True
         self.controller.show_frame("HomeScreen")
 
+    def play_alarm_sound(self):
+        try:
+            # Ensure pygame mixer is initialized
+            pygame.mixer.init()
+
+            # Load the alarm sound
+            alarm_sound_path = 'alarm.wav'  # Update the path to your sound file if necessary
+            pygame.mixer.music.load(alarm_sound_path)
+
+            # Play the alarm sound
+            pygame.mixer.music.play()
+
+            # Optional: Loop the sound if you want it to play continuously until a certain action stops it
+            # pygame.mixer.music.play(loops=-1)
+        except Exception as e:
+            print(f"Error playing alarm sound: {e}")
+
+    def stop_alarm_sound(self):
+        pygame.mixer.music.stop()
+
     def story_time(self):
+        self.stop_alarm_sound()
         self.controller.show_frame("StoryScreen")
         story_screen = self.controller.get_frame("StoryScreen")
         story_screen.reset_screen()

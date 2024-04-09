@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< HEAD
+    <list default="true" id="7564fd72-92cd-460b-be42-228e474454de" name="Changes" comment="added images">
+      <change beforePath="$PROJECT_DIR$/generationscreen.py" beforeDir="false" afterPath="$PROJECT_DIR$/generationscreen.py" afterDir="false" />
+    </list>
+=======
     <list default="true" id="7564fd72-92cd-460b-be42-228e474454de" name="Changes" comment="added images" />
+>>>>>>> parent of 7b2e294 (Werkend alarm)
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
