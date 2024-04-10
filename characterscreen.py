@@ -52,20 +52,66 @@ class CharacterScreen(tk.Frame):
 
             self.display_characters()
 
-            self.add_button = Button(self, text="Add character", command=self.add_character, pady=10, bg='#8E97FF', fg='white', borderless=1)
-            self.back_button = Button(self, text='Back to image', command=lambda: self.controller.show_frame("HomeScreen"), bg='#414BB2', fg='white', pady=10, borderless=1)
-            self.add_button.place(relx=0.7, rely=0.95, anchor=tk.CENTER)
-            self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+            self.add_button = self.create_icon_only_button(self, "Icons/add.png","Icons/add_press.png", self.add_character)
+            self.back_button = self.create_icon_only_button(self, "Icons/home.png","Icons/home_press.png", lambda: self.controller.show_frame("HomeScreen"))
 
+            self.add_button.place(relx=0.7, y=560, anchor=tk.CENTER)
+            self.back_button.place(relx=0.5, y=560, anchor=tk.CENTER)
+
+    def create_icon_only_button(self, parent, icon_path, pressed_icon_path, command):
+        # Load the normal icon
+        new_icon_size = (60, 60)  # Adjust the size as needed
+
+        icon_image = Image.open(icon_path)
+        icon_photo = ImageTk.PhotoImage(icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Load the pressed icon
+        pressed_icon_image = Image.open(pressed_icon_path)
+        pressed_icon_photo = ImageTk.PhotoImage(pressed_icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Use parent's background color for a seamless look
+        parent_bg = parent.cget('bg')
+
+        # Create the button frame
+        button_frame_outer = tk.Frame(parent, bg=parent_bg, bd=0, highlightthickness=0)
+        button_frame = tk.Frame(button_frame_outer, bg=parent_bg, bd=0, highlightthickness=0, width=70, height=70)
+        button_frame.pack_propagate(False)
+        button_frame.pack()
+
+        # Create the icon label centered in the frame
+        icon_label = tk.Label(button_frame, image=icon_photo, bg=parent_bg)
+        icon_label.image = icon_photo  # Keep a reference to avoid garbage collection
+        icon_label.pack(expand=True)
+
+        # Function to swap to the pressed icon
+        def on_press(event):
+            icon_label.config(image=pressed_icon_photo)
+            icon_label.image = pressed_icon_photo
+
+        # Function to swap back to the normal icon and execute the command when released
+        def on_release(event):
+            icon_label.config(image=icon_photo)
+            icon_label.image = icon_photo
+            command()
+
+        # Bind the press and release events
+        button_frame_outer.bind("<ButtonPress-1>", on_press)
+        button_frame_outer.bind("<ButtonRelease-1>", on_release)
+        icon_label.bind("<ButtonPress-1>", on_press)
+        icon_label.bind("<ButtonRelease-1>", on_release)
+
+        return button_frame_outer
 
 
     def set_buttons(self):
-        self.generate_button = Button(self, text='Generate', command=self.on_generate_button_press, bg='#8E97FF', fg='white', pady=10, borderless=1)
-        self.cancel_button = Button(self, text='Cancel\nimage generation', command=self.on_cancel_button_press, bg='#414BB2', fg='white', pady=4, borderless=1)
-        self.generate_button.place(relx=0.6, rely=0.95, anchor=tk.CENTER)
-        self.cancel_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
+        self.generate_button = self.create_icon_only_button(self, "Icons/generate.png","Icons/generate_press.png", self.on_generate_button_press)
+        self.cancel_button = self.create_icon_only_button(self, "Icons/cancel.png","Icons/cancel_press.png", self.on_cancel_button_press)
+        self.generate_button.place(relx=0.6, y=560, anchor=tk.CENTER)
+        self.cancel_button.place(relx=0.4, y=560, anchor=tk.CENTER)
         self.add_button.place_forget()
         self.back_button.place_forget()
+
+
 
     def forget_buttons(self):
         self.generate_button.place_forget()

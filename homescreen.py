@@ -163,6 +163,12 @@ class HomeScreen(tk.Frame):
         self.display_current_image()
         self.create_buttons()
 
+    def go_story(self):
+        self.controller.show_frame("StoryScreen")
+        story_screen = self.controller.get_frame("StoryScreen")
+        story_screen.reset_screen()
+        story_screen.setup_ui()  # Ensure this method updates the UI based on the current index
+
     def go_description(self):
         self.controller.show_frame("DescriptionScreen")
         description_screen = self.controller.get_frame("DescriptionScreen")
@@ -219,7 +225,7 @@ class HomeScreen(tk.Frame):
         button3 = self.create_icon_button(self, "Icons/characters.png", "Characters", self.go_characters)
         button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width)
 
-        button4 = self.create_icon_button(self, "Icons/story.png", "Story", lambda: self.controller.show_frame("StoryScreen"))
+        button4 = self.create_icon_button(self, "Icons/story.png", "Story", self.go_story)
         button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width)  # Adjust y for bottom placement
 
         button5 = self.create_icon_button(self, "Icons/alarm.png", "Alarm", self.go_alarm)

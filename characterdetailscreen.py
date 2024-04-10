@@ -73,11 +73,11 @@ class CharacterDetailScreen(tk.Frame):
 
         # Positioning the "Start Recording" button
         self.start_recording_button = Button(self, text="Start Recording to Edit", command=self.start_recording, font=("Helvetica", 14, "bold"), bg='#2C3488', fg='white', highlightbackground="#414BB2", borderless=0)
-        self.start_recording_button.place(relx=0.5, rely=0.5, anchor="center", width=200, height=50)
+        self.start_recording_button.place(relx=0.5, rely=0.5, anchor="center", width=250, height=50)
 
         # Positioning the "Stop Recording" button, hidden initially
         self.stop_recording_button = Button(self, text="Stop Recording and Save", command=self.stop_recording, font=("Helvetica", 14, "bold"), bg='#2C3488', fg='white', highlightbackground="#414BB2", borderless=0, state='disabled')
-        self.stop_recording_button.place(relx=0.5, rely=0.6, anchor="center", width=200, height=50)
+        self.stop_recording_button.place(relx=0.5, rely=0.6, anchor="center", width=250, height=50)
 
 
         # add edit and back buttons
@@ -104,6 +104,49 @@ class CharacterDetailScreen(tk.Frame):
         # self.edit_button.place(relx=0.3, rely=0.8, anchor=tk.CENTER)
         self.delete_button.place(relx=0.25, rely=0.8, anchor=tk.CENTER)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+    def create_icon_only_button(self, parent, icon_path, pressed_icon_path, command):
+        # Load the normal icon
+        new_icon_size = (60, 60)  # Adjust the size as needed
+
+        icon_image = Image.open(icon_path)
+        icon_photo = ImageTk.PhotoImage(icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Load the pressed icon
+        pressed_icon_image = Image.open(pressed_icon_path)
+        pressed_icon_photo = ImageTk.PhotoImage(pressed_icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Use parent's background color for a seamless look
+        parent_bg = parent.cget('bg')
+
+        # Create the button frame
+        button_frame_outer = tk.Frame(parent, bg=parent_bg, bd=0, highlightthickness=0)
+        button_frame = tk.Frame(button_frame_outer, bg=parent_bg, bd=0, highlightthickness=0, width=70, height=70)
+        button_frame.pack_propagate(False)
+        button_frame.pack()
+
+        # Create the icon label centered in the frame
+        icon_label = tk.Label(button_frame, image=icon_photo, bg=parent_bg)
+        icon_label.image = icon_photo  # Keep a reference to avoid garbage collection
+        icon_label.pack(expand=True)
+
+        # Function to swap to the pressed icon
+        def on_press(event):
+            icon_label.config(image=pressed_icon_photo)
+            icon_label.image = pressed_icon_photo
+
+        # Function to swap back to the normal icon and execute the command when released
+        def on_release(event):
+            icon_label.config(image=icon_photo)
+            icon_label.image = icon_photo
+            command()
+
+        # Bind the press and release events
+        button_frame_outer.bind("<ButtonPress-1>", on_press)
+        button_frame_outer.bind("<ButtonRelease-1>", on_release)
+        icon_label.bind("<ButtonPress-1>", on_press)
+        icon_label.bind("<ButtonRelease-1>", on_release)
+
+        return button_frame_outer
 
     def show_screen(self, character_name=None, character_description=None):
         # Optional: Update content if new character details are provided

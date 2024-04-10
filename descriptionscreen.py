@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
+
 from tkmacosx import Button
 from datetime import datetime
 import sqlite3
@@ -51,8 +53,7 @@ class DescriptionScreen(tk.Frame):
         date = tk.Label(self, text=self.date, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white", relief="flat", anchor="n")
 
         # add button to go back
-        back_button = Button(self, text="Back to image", command=lambda: self.go_back(), bg='#414BB2', fg='white', pady=10, borderless=1)
-        
+        self.back_button = self.create_icon_only_button(self, "Icons/home.png", "Icons/home_press.png", self.go_back)
 
         # Create buttons for adjusting text size
         text_size = tk.Label(self, text="Text size", font=("Helvetica", 24, "bold"), bg='#1D2364', fg='white')
@@ -71,10 +72,53 @@ class DescriptionScreen(tk.Frame):
         increase_button.place(relx=0.93, rely=0.4, anchor=tk.CENTER)
         decrease_button.place(relx=0.93, rely=0.5, anchor=tk.CENTER)
 
-
-        back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+        self.back_button.place(relx=0.5, y=560, anchor=tk.CENTER)
         # self.after(100, self.display_current_description)  # Delay added to ensure current index is fetched after the screen is fully initialized
 
+    def create_icon_only_button(self, parent, icon_path, pressed_icon_path, command):
+        # Load the normal icon
+        new_icon_size = (60, 60)  # Adjust the size as needed
+
+        icon_image = Image.open(icon_path)
+        icon_photo = ImageTk.PhotoImage(icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Load the pressed icon
+        pressed_icon_image = Image.open(pressed_icon_path)
+        pressed_icon_photo = ImageTk.PhotoImage(pressed_icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Use parent's background color for a seamless look
+        parent_bg = parent.cget('bg')
+
+        # Create the button frame
+        button_frame_outer = tk.Frame(parent, bg=parent_bg, bd=0, highlightthickness=0)
+        button_frame = tk.Frame(button_frame_outer, bg=parent_bg, bd=0, highlightthickness=0, width=70, height=70)
+        button_frame.pack_propagate(False)
+        button_frame.pack()
+
+        # Create the icon label centered in the frame
+        icon_label = tk.Label(button_frame, image=icon_photo, bg=parent_bg)
+        icon_label.image = icon_photo  # Keep a reference to avoid garbage collection
+        icon_label.pack(expand=True)
+
+        # Function to swap to the pressed icon
+        def on_press(event):
+            icon_label.config(image=pressed_icon_photo)
+            icon_label.image = pressed_icon_photo
+
+        # Function to swap back to the normal icon and execute the command when released
+        def on_release(event):
+            icon_label.config(image=icon_photo)
+            icon_label.image = icon_photo
+            command()
+
+        # Bind the press and release events
+        button_frame_outer.bind("<ButtonPress-1>", on_press)
+        button_frame_outer.bind("<ButtonRelease-1>", on_release)
+        icon_label.bind("<ButtonPress-1>", on_press)
+        icon_label.bind("<ButtonRelease-1>", on_release)
+
+
+        return button_frame_outer
     def display_current_description(self):
         current_image_index = self.controller.get_shared_data("current_image_index")
         current_id = self.controller.get_shared_data("current_id")

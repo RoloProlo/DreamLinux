@@ -1,6 +1,7 @@
 import tkinter as tk
 from gtts import gTTS
 from tkmacosx import Button
+from PIL import Image, ImageTk
 import pygame
 import pyaudio
 import sounddevice as sd
@@ -38,14 +39,14 @@ class StoryScreen(tk.Frame):
         self.clock_label = tk.Label(self, font=("Helvetica", 44, "bold"), bg="#1D2364", fg="white")
         self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
 
-        self.start_button = Button(self, text='Start Speech', command=self.start_conversation, bg='#414BB2', fg='white', pady=10, borderless=1)
-        self.start_button.place(relx=0.4, rely=0.95, anchor=tk.CENTER)
+        self.start_button = self.create_icon_only_button(self, "Icons/play.png", "Icons/play_press.png", self.start_conversation)
+        self.start_button.place(relx=0.6, y=560, anchor=tk.CENTER)
 
         # self.skip_button = Button(self, text='Skip', command=lambda: self.skip_dev(), bg='#414BB2', fg='white', pady=10, borderless=1)
         # self.skip_button.place(relx=0.3, rely=0.95, anchor=tk.CENTER)
 
-        self.back_button = Button(self, text='Go Back', command=self.go_back, bg='#414BB2', fg='white', pady=10, borderless=1)
-        self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
+        self.back_button = self.create_icon_only_button(self, "Icons/home.png", "Icons/home_press.png", self.go_back)
+        self.back_button.place(relx=0.5, y=560, anchor=tk.CENTER)
 
         # self.text_input = tk.Entry(self, font=("Helvetica", 20), width=30)
         # self.text_input.place(relx=0.3, rely=0.75, anchor=tk.CENTER)
@@ -61,6 +62,104 @@ class StoryScreen(tk.Frame):
         # self.clock_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
         # self.canvas.place(x=100, y=100, width=850, height=430)
 
+
+    def create_icon_only_button(self, parent, icon_path, pressed_icon_path, command):
+        # Load the normal icon
+        new_icon_size = (60, 60)  # Adjust the size as needed
+
+        icon_image = Image.open(icon_path)
+        icon_photo = ImageTk.PhotoImage(icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Load the pressed icon
+        pressed_icon_image = Image.open(pressed_icon_path)
+        pressed_icon_photo = ImageTk.PhotoImage(pressed_icon_image.resize(new_icon_size, Image.Resampling.LANCZOS))
+
+        # Use parent's background color for a seamless look
+        parent_bg = parent.cget('bg')
+
+        # Create the button frame
+        button_frame_outer = tk.Frame(parent, bg=parent_bg, bd=0, highlightthickness=0)
+        button_frame = tk.Frame(button_frame_outer, bg=parent_bg, bd=0, highlightthickness=0, width=70, height=70)
+        button_frame.pack_propagate(False)
+        button_frame.pack()
+
+        # Create the icon label centered in the frame
+        icon_label = tk.Label(button_frame, image=icon_photo, bg=parent_bg)
+        icon_label.image = icon_photo  # Keep a reference to avoid garbage collection
+        icon_label.pack(expand=True)
+
+        # Function to swap to the pressed icon
+        def on_press(event):
+            icon_label.config(image=pressed_icon_photo)
+            icon_label.image = pressed_icon_photo
+
+        # Function to swap back to the normal icon and execute the command when released
+        def on_release(event):
+            icon_label.config(image=icon_photo)
+            icon_label.image = icon_photo
+            command()
+
+        # Bind the press and release events
+        button_frame_outer.bind("<ButtonPress-1>", on_press)
+        button_frame_outer.bind("<ButtonRelease-1>", on_release)
+        icon_label.bind("<ButtonPress-1>", on_press)
+        icon_label.bind("<ButtonRelease-1>", on_release)
+        return button_frame_outer
+
+    def create_icon_button(self, parent, icon_path, text, command):
+        # Load the icon
+        icon_image = Image.open(icon_path)
+
+        # Resize the icon to a smaller size, e.g., 30x30 pixels
+        icon_image = icon_image.resize((60, 60), Image.Resampling.LANCZOS)
+        icon_photo = ImageTk.PhotoImage(icon_image)
+
+        # Define colors for normal and pressed states
+        normal_bg = '#66ABC0'
+        pressed_bg = '#5599AF'  # Darker shade for pressed state
+
+        # Create an outer frame to simulate the darker edges with a slightly darker background.
+        button_frame_outer = tk.Frame(parent, bg='#38aec7', bd=0, highlightthickness=0, padx=2, pady=2)
+
+        # The inner frame holds the content and has the original background color.
+        button_frame = tk.Frame(button_frame_outer, bg=normal_bg, bd=0, highlightthickness=0)
+        button_frame.pack(fill='both', expand=True)
+
+        # Create the icon label with invisible padding
+        icon_label = tk.Label(button_frame, image=icon_photo, bg=normal_bg)
+        icon_label.image = icon_photo  # Keep a reference!
+
+        # Create the text label with a larger font
+        text_label = tk.Label(button_frame, text=text, bg=normal_bg, fg='white', font=("Helvetica", 30))
+
+        # Use grid layout for precise control over placement
+        button_frame.grid_columnconfigure(1, weight=1)
+        icon_label.grid(row=0, column=0, sticky="w")
+        text_label.grid(row=0, column=1, sticky="ew")
+
+        # Function to change the background color when pressed
+        def on_press(event):
+            button_frame.config(bg=pressed_bg)
+            icon_label.config(bg=pressed_bg)
+            text_label.config(bg=pressed_bg)
+
+        # Function to change the background color back when released and execute the command
+        def on_release(event):
+            button_frame.config(bg=normal_bg)
+            icon_label.config(bg=normal_bg)
+            text_label.config(bg=normal_bg)
+            command()
+
+        # Bind the press and release events
+        button_frame_outer.bind("<ButtonPress-1>", on_press)
+        button_frame_outer.bind("<ButtonRelease-1>", on_release)
+        icon_label.bind("<ButtonPress-1>", on_press)
+        icon_label.bind("<ButtonRelease-1>", on_release)
+        text_label.bind("<ButtonPress-1>", on_press)
+        text_label.bind("<ButtonRelease-1>", on_release)
+
+        return button_frame_outer
+
     def confirm_recording(self):
         print("Confirmed transcription.")
         description = self.description
@@ -70,16 +169,6 @@ class StoryScreen(tk.Frame):
         generation_screen = self.controller.get_frame("GenerationScreen")
         generation_screen.start_gen(description)
 
-        # character_screen = self.controller.get_frame("CharacterScreen")
-        # character_screen.start_gen(typed_description)
-        # self.controller.show_frame("GenerationScreen")
-        #self.controller.show_frame("GenerationScreen")
-
-    # def generation_characters(self):
-    #     generation_screen = self.controller.get_frame("GenerationScreen")
-    #     generation_screen.start_gen(typed_description)
-    #     self.controller.show_frame("GenerationScreen")
-    #     return
 
     # def skip_dev(self):
     #     # Get the description from the Entry widget
@@ -163,7 +252,7 @@ class StoryScreen(tk.Frame):
 
     def show_stop_button(self):
         # Method to show the "Stop Recording" button and start recording in a separate thread
-        self.stop_button = Button(self, text="Stop Recording", command=self.stop_recording_action, bg='#414BB2', fg='white', pady=10, borderless=1)
+        self.stop_button = self.create_icon_button(self, "Icons/stop_rec.png", "Stop Recording", self.stop_recording_action)
         self.stop_button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         # Start recording in a separate thread to avoid blocking the UI
@@ -189,6 +278,8 @@ class StoryScreen(tk.Frame):
         # Reset the description and stop_recording flag
         self.description = ""
         self.stop_recording = False
+
+        self.canvas.delete("speech_text")
 
         # Remove the stop button if it exists
         try:
@@ -254,11 +345,10 @@ class StoryScreen(tk.Frame):
             self.recording_thread.join()
 
     def show_confirmation_buttons(self):
-        self.confirm_button = Button(self, text="Confirm", command=self.confirm_recording, bg='#414BB2', fg='white', pady=10, borderless=1)
-        self.again_button = Button(self, text="Again", command=self.restart_recording, bg='#414BB2', fg='white', pady=10, borderless=1)
-        self.again_button.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
-
-        self.confirm_button.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
+        self.confirm_button = self.create_icon_only_button(self, "Icons/generate.png", "Icons/generate_press.png", self.confirm_recording)
+        self.again_button = self.create_icon_only_button(self, "Icons/again.png", "Icons/again_press.png", self.restart_recording)
+        self.again_button.place(relx=0.4, y=560, anchor=tk.CENTER)
+        self.confirm_button.place(relx=0.7, y=560, anchor=tk.CENTER)
 
     def restart_recording(self):
         self.again_button.place_forget()
