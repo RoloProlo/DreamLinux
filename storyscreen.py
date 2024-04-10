@@ -10,7 +10,6 @@ from datetime import datetime
 from speechbubble import SpeechBubble
 from scipy.io.wavfile import write
 import numpy as np
-from database import DB
 import sqlite3
 import threading
 import soundfile as sf  # For saving the recording
@@ -70,25 +69,14 @@ class StoryScreen(tk.Frame):
         generation_screen = self.controller.get_frame("GenerationScreen")
         generation_screen.start_gen(description)
 
-        # character_screen = self.controller.get_frame("CharacterScreen")
-        # character_screen.start_gen(typed_description)
-        # self.controller.show_frame("GenerationScreen")
-        #self.controller.show_frame("GenerationScreen")
-
-    # def generation_characters(self):
-    #     generation_screen = self.controller.get_frame("GenerationScreen")
-    #     generation_screen.start_gen(typed_description)
-    #     self.controller.show_frame("GenerationScreen")
-    #     return
-
     # def skip_dev(self):
     #     # Get the description from the Entry widget
     #     typed_description = self.text_input.get().strip()
-    #
+    
     #     # Check if the description is empty and use a default value or the typed value
     #     if not typed_description:
     #         typed_description = "Default prompt if the user didn't type anything."
-    #
+    
     #     # Pass the typed description to the GenerationScreen
     #     generation_screen = self.controller.get_frame("GenerationScreen")
     #     generation_screen.start_gen(typed_description)

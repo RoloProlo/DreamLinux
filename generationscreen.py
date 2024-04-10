@@ -19,7 +19,7 @@ class GenerationScreen(tk.Frame):
         self.configure(background='#1D2364')
         self.canvas = tk.Canvas(self, bg="#1D2364", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
-        self.description = "I had to help my friend from the past with the washing machine. but the washing machine was flying around and breaking down. I was stressed because I had a lot of appointments during the day and I needed to go. But it was raining and stormy, and I needed to pee so I went to a coffeeplace, but there kept being a woman in front of me."
+        self.description = ""
         self.meaning = ""
         self.characters = ""
         self.image_label = tk.Label(self)  # Placeholder for the image
@@ -51,8 +51,6 @@ class GenerationScreen(tk.Frame):
         self.controller.show_frame("CharacterScreen")
 
 
-        # self.generate_and_display_image(self.description)
-
     def start_img(self):
         self.replace_names_with_descriptions()
         print(self.prompted_generation)
@@ -79,39 +77,29 @@ class GenerationScreen(tk.Frame):
                 _, description = character
                 if description and description.strip() != "No description available":
                     return f"{name} ({description})"
+
             return name  # Return the name as is if no description is available or if not found
 
         # Compile a regular expression pattern that matches any of the character names
         # Use re.IGNORECASE for case-insensitive matching
         names_pattern = re.compile('|'.join(re.escape(name) for name, _ in characters), re.IGNORECASE)
 
+        # make sure the system understands that the narrator refers to themself as I 
+        new_description = []    
+        for word in dream_description.split():  
+            if word == "I":
+                word = word.replace("I", "Myself")
+            new_description.append(word)
+
+        new_description = ' '.join(new_description)
+        print(new_description)
+
         # Use the sub method to replace all occurrences found by the pattern
         # The replace_function determines the replacement text for each match
-        self.prompted_generation = names_pattern.sub(replace_function, dream_description)
+        self.prompted_generation = names_pattern.sub(replace_function, new_description)
 
         conn.close()
 
-    # def replace_names_with_descriptions(self):
-    #     # Connect to the database
-    #     conn = sqlite3.connect('Characters.db')
-    #     cursor = conn.cursor()
-    #     dream_description = self.description
-    #
-    #     # Fetch all character names and descriptions
-    #     cursor.execute("SELECT name, description FROM Characters")
-    #     characters = cursor.fetchall()
-    #
-    #     # Replace each name in the dream description with its description
-    #     for name, description in characters:
-    #         if name in dream_description:
-    #             if description and description.strip() != "No description available":
-    #                 replacement_text = f"{name} ({description})"
-    #             else:
-    #                 replacement_text = name  # If no valid description, just use the name without appending anything.
-    #             dream_description = dream_description.replace(name, replacement_text)
-    #
-    #     conn.close()
-    #     self.prompted_generation = dream_description
 
     def generate_and_display_image(self, prompt):
         if not prompt:
@@ -195,7 +183,7 @@ class GenerationScreen(tk.Frame):
             return
         enhanced_prompt = f"consider this story: {prompt}. Give me a list of all the characters, with no subdivision.\
                 Every single character should be mentioned separately on its own line. Only include characters that are explicitely mentioned, and only include humans (so no objects).\
-                The narrator, or the 'I' in the story should be listed as Me"
+                The narrator, or the 'I' in the story should be listed as Myself"
         headers = {
             "Authorization": f"Bearer {self.API_KEY}"
         }
@@ -225,13 +213,7 @@ class GenerationScreen(tk.Frame):
                 characters_string = ', '.join(characters_list)
                 print("test" + characters_string)
                 self.characters = characters_string  # Store the characters list fo
-                # Split the text into lines and extract characters
-                # characters_list = [line.split(". ")[1] for line in characters.split("\n") if line.strip()]
-                # print("list: ", characters_list)
-                # # Join characters with comma and save as a string
-                # characters_string = ', '.join(characters_list)
-                # self.characters = characters_string  # Store the characters list for future use
-                # print(characters_string)
+      
             except KeyError as e:
                 messagebox.showerror("Error", f"Failed to parse character data. {e}")
         else:
@@ -329,18 +311,3 @@ class GenerationScreen(tk.Frame):
         self.controller.show_frame("HomeScreen")
         self.conn.close()  # Close the database connection when leaving this screen
 
-
-# # Create a Tkinter application instance
-# app = tk.Tk()
-
-# # Set the window title
-# app.title("Generation Screen")
-
-# # Set the window size
-# app.geometry("800x600")
-
-# # Create an instance of the GenerationScreen class
-# generation_screen = GenerationScreen(app, None)  # Pass None as controller for now
-
-# # Run the Tkinter event loop
-# app.mainloop()

@@ -4,6 +4,9 @@ import sqlite3
 conn = sqlite3.connect('Characters.db')
 cursor = conn.cursor()
 
+cursor.execute("DELETE FROM Characters WHERE name = 'Lisa'")
+
+conn.commit()
 # Fetch all records from the DreamImages table
 cursor.execute("SELECT id, name, description FROM Characters")
 # id INTEGER PRIMARY KEY,
