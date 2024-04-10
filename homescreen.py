@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk, ImageOps
+from PIL import Image, ImageTk, ImageOps, ImageDraw
 import sqlite3
 from datetime import datetime
 from PIL import Image
@@ -37,16 +37,7 @@ class HomeScreen(tk.Frame):
         self.update_time_date()
         self.display_current_image()
 
-        # # Display the current time and date
-        # self.time_label = tk.Label(self, font=("Helvetica", 40, "bold"), bg="#1D2364", fg="white")
-        # self.date_label = tk.Label(self, font=("Helvetica", 24, "bold"), bg="#1D2364", fg="white")
-        # # Update the date label to show the date of the current image
-        # self.date_label.config(text=self.current_date)
 
-        # self.time_label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
-        # self.time_label.config(bg="#1D2364")
-        # self.date_label.place(relx=0.5, rely=0.12, anchor=tk.CENTER)
-        # self.date_label.config(bg="#1D2364")
 
     def reset_screen(self):
         self.load_images_from_database()
@@ -95,9 +86,6 @@ class HomeScreen(tk.Frame):
         resized_image = ImageOps.contain(original_image, target_size)
         photo = ImageTk.PhotoImage(resized_image)
 
-        # # Pick color
-        # most_prominent_color = self.get_most_prominent_color(original_image)
-        # print(f"The most prominent color in the image is: {most_prominent_color}")
 
         # Create a label to display the image
         self.image_label = tk.Label(self, image=photo, background='#1D2364')
@@ -108,9 +96,9 @@ class HomeScreen(tk.Frame):
         self.date_label.config(text=self.current_date)
 
         # display enlarge button
-        enlarge_button = Button(self, text="⇐", bg="#414BB2", fg="white", command=lambda: self.enlarge_image(), highlightbackground="#414BB2", borderless=0)
-        enlarge_button.config(width=50, height=50)
-        enlarge_button.place(relx=0.976, rely=0.184, anchor=tk.CENTER)
+        # enlarge_button = Button(self, text="⇐", bg="#414BB2", fg="white", command=lambda: self.enlarge_image(), highlightbackground="#414BB2", borderless=0)
+        # enlarge_button.config(width=50, height=50)
+        # enlarge_button.place(relx=0.976, rely=0.184, anchor=tk.CENTER)
 
         self.create_buttons()
 
@@ -202,10 +190,14 @@ class HomeScreen(tk.Frame):
 
     def create_buttons(self):
 
+        enlarge_button = self.create_icon_only_button(self, "Icons/enlarge.png", self.enlarge_image)
+        enlarge_button.config(width=50, height=50)
+        enlarge_button.place(relx=0.956, rely=0.184, anchor=tk.CENTER)
+
         # Navigation buttons
-        next_button = Button(self, text=">>", bg='#414BB2', fg='white', command=self.next_image, highlightbackground="#414BB2", borderless=0)
+        next_button = self.create_icon_only_button(self, "Icons/next.png", self.next_image)
         next_button.config(width=50, height=50)
-        prev_button = Button(self, text="<<", bg='#414BB2', fg='white', command=self.previous_image, highlightbackground="#414BB2", borderless=0)
+        prev_button = self.create_icon_only_button(self, "Icons/back.png", self.previous_image)
         prev_button.config(width=50, height=50)
 
         # Place navigation buttons
@@ -213,25 +205,125 @@ class HomeScreen(tk.Frame):
         prev_button.place(relx=0.05, rely=0.55, anchor=tk.CENTER)
 
         # Calculate button width and the spacing between them
-        button_width = 100  # Fixed width for each button
+        button_width = 180  # Fixed width for each button
         parent_width = 1024  # Assuming the parent frame's width is the whole window width
         space_between_buttons = (parent_width - (5 * button_width)) / 6  # Equally space out buttons
 
 
-        # Button 1
-        button1 = Button(self, text="Description", bg='#8E97FF', fg='white', command=self.go_description, highlightbackground="#8E97FF", pady=10, borderless=0)
-        button1.place(x=space_between_buttons, y=520, width=button_width)  # Adjust y for bottom placement
-        # Button 2
-        button2 = Button(self, text="Meaning", bg='#8E97FF', fg='white', command=self.go_meaning, highlightbackground="#8E97FF", pady=10, borderless=0)
+        button1 = self.create_icon_button(self, "Icons/description.png", "Description", self.go_description)
+        button1.place(x=space_between_buttons, y=520, width=button_width)  # Adjust x and y as needed
+
+        button2 = self.create_icon_button(self, "Icons/meaning.png", "Meaning", self.go_meaning)
         button2.place(x=space_between_buttons * 2 + button_width, y=520, width=button_width)
-        # Button 3
-        button3 = Button(self, text="Characters", bg='#8E97FF', fg='white', command=self.go_characters, highlightbackground="#8E97FF", pady=10, borderless=0)
+
+        button3 = self.create_icon_button(self, "Icons/characters.png", "Characters", self.go_characters)
         button3.place(x=space_between_buttons * 3 + button_width * 2, y=520, width=button_width)
-        # Button 4
-        button4 = Button(self, text="Story", bg='#8E97FF', fg='white', command=lambda: self.controller.show_frame("StoryScreen"), highlightbackground="#8E97FF", pady=10, borderless=0)
+
+        button4 = self.create_icon_button(self, "Icons/story.png", "Story", lambda: self.controller.show_frame("StoryScreen"))
         button4.place(x=space_between_buttons * 4 + button_width * 3, y=520, width=button_width)  # Adjust y for bottom placement
-        # # Button 5
-        button5 = Button(self, text="Alarm", bg='#414BB2', fg='white', command=self.go_alarm, highlightbackground="#414BB2", pady=10, borderless=0)
+
+        button5 = self.create_icon_button(self, "Icons/alarm.png", "Alarm", self.go_alarm)
         button5.place(x=space_between_buttons * 5 + button_width * 4, y=520, width=button_width)  # Adjust y for bottom placement
+
+
+    def create_icon_only_button(self, parent, icon_path, command):
+        # Load the icon
+        icon_image = Image.open(icon_path)
+
+        # Assuming a square shape for the button, set both dimensions equal for the icon size
+        icon_size = 40  # Adjust the size as needed
+        icon_image = icon_image.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+        icon_photo = ImageTk.PhotoImage(icon_image)
+
+        # Define colors for normal and pressed states
+        normal_bg = '#66ABC0'
+        pressed_bg = '#5599AF'  # Darker shade for pressed state
+
+        # Create an outer frame to simulate the darker edges with a slightly darker background.
+        button_frame_outer = tk.Frame(parent, bg='#38aec7', bd=0, highlightthickness=0, padx=2, pady=2)
+
+        # The inner frame holds the icon and has the original background color, making the button square.
+        button_size = 50  # The total size of the button, slightly larger than the icon
+        button_frame = tk.Frame(button_frame_outer, bg=normal_bg, bd=0, highlightthickness=0, width=button_size, height=button_size)
+        button_frame.pack_propagate(False)  # Prevents the frame from shrinking to fit the icon
+        button_frame.pack()
+
+        # Create the icon label centered in the frame
+        icon_label = tk.Label(button_frame, image=icon_photo, bg=normal_bg)
+        icon_label.image = icon_photo  # Keep a reference!
+        icon_label.pack(expand=True)
+
+        # Function to change the background color when pressed
+        def on_press(event):
+            button_frame.config(bg=pressed_bg)
+            icon_label.config(bg=pressed_bg)
+
+        # Function to change the background color back when released and execute the command
+        def on_release(event):
+            button_frame.config(bg=normal_bg)
+            icon_label.config(bg=normal_bg)
+            command()
+
+        # Bind the press and release events to provide visual feedback
+        button_frame_outer.bind("<ButtonPress-1>", on_press)
+        button_frame_outer.bind("<ButtonRelease-1>", on_release)
+        icon_label.bind("<ButtonPress-1>", on_press)
+        icon_label.bind("<ButtonRelease-1>", on_release)
+
+        return button_frame_outer
+
+    def create_icon_button(self, parent, icon_path, text, command):
+        # Load the icon
+        icon_image = Image.open(icon_path)
+
+        # Resize the icon to a smaller size, e.g., 30x30 pixels
+        icon_image = icon_image.resize((40, 40), Image.Resampling.LANCZOS)
+        icon_photo = ImageTk.PhotoImage(icon_image)
+
+        # Define colors for normal and pressed states
+        normal_bg = '#66ABC0'
+        pressed_bg = '#5599AF'  # Darker shade for pressed state
+
+        # Create an outer frame to simulate the darker edges with a slightly darker background.
+        button_frame_outer = tk.Frame(parent, bg='#38aec7', bd=0, highlightthickness=0, padx=2, pady=2)
+
+        # The inner frame holds the content and has the original background color.
+        button_frame = tk.Frame(button_frame_outer, bg=normal_bg, bd=0, highlightthickness=0)
+        button_frame.pack(fill='both', expand=True)
+
+        # Create the icon label with invisible padding
+        icon_label = tk.Label(button_frame, image=icon_photo, bg=normal_bg)
+        icon_label.image = icon_photo  # Keep a reference!
+
+        # Create the text label with a larger font
+        text_label = tk.Label(button_frame, text=text, bg=normal_bg, fg='white', font=("Helvetica", 20))
+
+        # Use grid layout for precise control over placement
+        button_frame.grid_columnconfigure(1, weight=1)
+        icon_label.grid(row=0, column=0, sticky="w")
+        text_label.grid(row=0, column=1, sticky="ew")
+
+        # Function to change the background color when pressed
+        def on_press(event):
+            button_frame.config(bg=pressed_bg)
+            icon_label.config(bg=pressed_bg)
+            text_label.config(bg=pressed_bg)
+
+        # Function to change the background color back when released and execute the command
+        def on_release(event):
+            button_frame.config(bg=normal_bg)
+            icon_label.config(bg=normal_bg)
+            text_label.config(bg=normal_bg)
+            command()
+
+        # Bind the press and release events
+        button_frame_outer.bind("<ButtonPress-1>", on_press)
+        button_frame_outer.bind("<ButtonRelease-1>", on_release)
+        icon_label.bind("<ButtonPress-1>", on_press)
+        icon_label.bind("<ButtonRelease-1>", on_release)
+        text_label.bind("<ButtonPress-1>", on_press)
+        text_label.bind("<ButtonRelease-1>", on_release)
+
+        return button_frame_outer
 
 
