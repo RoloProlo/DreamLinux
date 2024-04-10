@@ -107,7 +107,7 @@ class AlarmScreen(tk.Frame):
         self.stop_alarm_sound()
         self.controller.show_frame("StoryScreen")
         story_screen = self.controller.get_frame("StoryScreen")
-        story_screen.reset_screen()
+        # story_screen.reset_screen()
         self.ready = True
 
         self.setup_ui()
@@ -293,11 +293,14 @@ class AlarmScreen(tk.Frame):
         self.minute_decrement_button.config(width=50, height=50)
         self.minute_decrement_button.place(relx=0.61, rely=0.26, anchor=tk.CENTER)
 
-        self.set_button = self.create_icon_only_button(self, "Icons/add_alarm.png", "Icons/add_alarm_press.png", self.set_alarm)
+        # self.set_button = self.create_icon_only_button(self, "Icons/add_alarm.png", "Icons/add_alarm_press.png", self.set_alarm)
+        self.set_button = tkmacosx.Button(self, text='Set', command=set_alarm, bg='#414BB2', fg='white', pady=10,
+                                          borderless=1)
 
-        self.set_button.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
 
         self.delete_button = self.create_icon_only_button(self, "Icons/cancel.png", "Icons/cancel_press.png", self.exit_alarm)
+        self.set_button.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
+
         self.delete_button.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
 
 
