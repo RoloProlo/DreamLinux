@@ -205,7 +205,7 @@ class HomeScreen(tk.Frame):
         prev_button.place(relx=0.05, rely=0.55, anchor=tk.CENTER)
 
         # Calculate button width and the spacing between them
-        button_width = 150  # Fixed width for each button
+        button_width = 180  # Fixed width for each button
         parent_width = 1024  # Assuming the parent frame's width is the whole window width
         space_between_buttons = (parent_width - (5 * button_width)) / 6  # Equally space out buttons
 
@@ -277,7 +277,7 @@ class HomeScreen(tk.Frame):
         icon_image = Image.open(icon_path)
 
         # Resize the icon to a smaller size, e.g., 30x30 pixels
-        icon_image = icon_image.resize((30, 30), Image.Resampling.LANCZOS)
+        icon_image = icon_image.resize((40, 40), Image.Resampling.LANCZOS)
         icon_photo = ImageTk.PhotoImage(icon_image)
 
         # Define colors for normal and pressed states
@@ -296,7 +296,7 @@ class HomeScreen(tk.Frame):
         icon_label.image = icon_photo  # Keep a reference!
 
         # Create the text label with a larger font
-        text_label = tk.Label(button_frame, text=text, bg=normal_bg, fg='white', font=("Helvetica", 16))
+        text_label = tk.Label(button_frame, text=text, bg=normal_bg, fg='white', font=("Helvetica", 20))
 
         # Use grid layout for precise control over placement
         button_frame.grid_columnconfigure(1, weight=1)
