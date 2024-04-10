@@ -4,7 +4,6 @@ from datetime import datetime
 import sqlite3
 from tkmacosx import Button
 from characterdetailscreen import CharacterDetailScreen
-from database import DB
 
 class CharacterScreen(tk.Frame):
     def __init__(self, parent, controller):

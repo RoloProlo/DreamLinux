@@ -72,11 +72,11 @@ class CharacterDetailScreen(tk.Frame):
         self.decrease_button.config(width=50, height=50)
 
         # Positioning the "Start Recording" button
-        self.start_recording_button = tk.Button(self, text="Start Recording", command=self.start_recording)
+        self.start_recording_button = Button(self, text="Start Recording to Edit", command=self.start_recording, font=("Helvetica", 14, "bold"), bg='#2C3488', fg='white', highlightbackground="#414BB2", borderless=0)
         self.start_recording_button.place(relx=0.5, rely=0.5, anchor="center", width=200, height=50)
 
         # Positioning the "Stop Recording" button, hidden initially
-        self.stop_recording_button = tk.Button(self, text="Stop Recording and Save", command=self.stop_recording, state='disabled')
+        self.stop_recording_button = Button(self, text="Stop Recording and Save", command=self.stop_recording, font=("Helvetica", 14, "bold"), bg='#2C3488', fg='white', highlightbackground="#414BB2", borderless=0, state='disabled')
         self.stop_recording_button.place(relx=0.5, rely=0.6, anchor="center", width=200, height=50)
 
 
@@ -102,7 +102,7 @@ class CharacterDetailScreen(tk.Frame):
         self.decrease_button.place(relx=0.93, rely=0.5, anchor=tk.CENTER)
 
         # self.edit_button.place(relx=0.3, rely=0.8, anchor=tk.CENTER)
-        self.delete_button.place(relx=0.2, rely=0.8, anchor=tk.CENTER)
+        self.delete_button.place(relx=0.25, rely=0.8, anchor=tk.CENTER)
         self.back_button.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
     def show_screen(self, character_name=None, character_description=None):
